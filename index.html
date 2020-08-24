@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Wurm Food Calculator</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <link rel="stylesheet" href="main.css">
+    </head>
+    <body>
+        <h1>Wurm Online Food Calculator</h1>
+        <div id="app">
+            <div class="player-offset">
+                <b>Player offset:</b> <input type="number" min="0" max="137" v-model.number="offset"/>
+            </div>
+            <div class="explain">
+                First: if you don't know the players offset, enter the meal you made below and what affinity it gave the player. <br />
+                Then click "Apply" and the value is copied into the field above. <br />
+                To get started, click on "Taste Calibrator". <br />
+                If you already know the offset, enter it above.
+            </div>
+            <!--
+            <cooker-selector
+                v-bind:cooker="cooker"
+                v-bind:rarity="cooker_rarity"
+                v-bind:container="cooker_container"
+                v-on:set="setCooker($event)"
+            ></cooker-selector>
+            <br />
+            <ingredient-selector v-for="item in ingredients"
+                v-bind:ingredient="item.ingredient"
+                v-bind:modifier="item.modifier"
+                v-bind:rarity="item.rarity"
+                v-bind:key="item.key"
+                v-on:set="setIngredient($event)"
+            ></ingredient-selector>
+            -->
+            <section>
+                <div class="section-header" v-on:click="offsetFinder = !offsetFinder">Taste Calibrator</div>
+                <div class="section-body" v-show="offsetFinder">
+                    <taste-tester v-on:set-offset="setOffset($event)"></taste-tester>
+                </div>
+            </section>
+
+            <div class="explain">
+                Now you can either use the "Meal Maker" below which allows you to freely choose the ingredients you use and will display the affinity the meal will result in. <br />
+                Or use one of the generators below to generate a food item to target a specific skill.
+            </div>
+
+            <section>
+                <div class="section-header" v-on:click="mealMaker = !mealMaker">Meal Maker</div>
+                <div class="section-body" v-show="mealMaker">
+                    <meal-maker v-bind:offset="offset"></meal-maker>
+                </div>
+            </section>
+
+            <section>
+                <div class="section-header" v-on:click="pizzaGenerator = !pizzaGenerator">Pizza Generator</div>
+                <div class="section-body" v-show="pizzaGenerator">
+                    <pizza-generator v-bind:offset="offset"></pizza-generator>
+                </div>
+            </section>
+        </div>
+
+        <script src="main.js"></script>
+    </body>
+</html>

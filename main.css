@@ -1,0 +1,82 @@
+html, body {
+    padding: 0;
+    margin: 0;
+    font-size: 1.04em;
+}
+
+.app {
+    width: 100%;
+}
+
+:root {
+    --main-padding: 10px;
+}
+
+h1 {
+    text-align: center;
+    background-color: #33AA33;
+    margin-top: 0;
+}
+
+.player-offset {
+    padding-left: var(--main-padding);
+    margin-bottom: 7px;
+}
+
+.explain {
+    background-color: #AABBFF;
+    padding-left: var(--main-padding);
+    box-sizing: content-box;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+section {
+    width: 100%;
+}
+
+.section-header {
+    font-size: 1.5em;
+    padding-left: var(--main-padding);
+    padding-top: 5px;
+    padding-bottom: 5px;
+    cursor: pointer;
+    background-color: #444444;
+    color: white;
+}
+
+.section-body {
+    padding: var(--main-padding);
+    background-color: #E8E8E8;
+}
+
+.skill-ok {
+    background-color: #BBFFBB;
+}
+
+.skill-error {
+    background-color: #FFBBBB;
+}
+
+.skill-result {
+    padding: 3px;
+}
+
+.meat-select {
+    width: 150px;
+    display: inline-block;
+}
+
+.ingredient-category:nth-child(odd) {
+    background-color: #AADDAA;
+    margin-top: 4px;
+    padding: 3px;
+}
+
+.ingredient-category:nth-child(even) {
+    background-color: #88BB88;
+    margin-top: 4px;
+    padding: 3px;
+}

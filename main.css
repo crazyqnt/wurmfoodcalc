@@ -14,11 +14,12 @@ html, body {
 
 h1 {
     text-align: center;
-    background-color: #33AA33;
+    background-color: #444444;
     margin-top: 0;
+    color: white;
 }
 
-.player-offset {
+.app-header {
     padding-left: var(--main-padding);
     margin-bottom: 7px;
 }
@@ -69,14 +70,48 @@ section {
     display: inline-block;
 }
 
-.ingredient-category:nth-child(odd) {
+.ingredient-category {
     background-color: #AADDAA;
-    margin-top: 4px;
+    margin-top: 6px;
+}
+
+.ingcat-header > h3 {
+    background-color: #66AA66;
+    display: inline-block;
+    min-width: 200px;
+    text-align: left;
+    margin: 0;
+    padding: 3px;
+    cursor: pointer;
+}
+
+.ingcat-header {
+    background-color: #88BB88;
+}
+
+.ingcat-body {
     padding: 3px;
 }
 
-.ingredient-category:nth-child(even) {
-    background-color: #88BB88;
-    margin-top: 4px;
-    padding: 3px;
+.save-feedback {
+    display: inline-block;
+}
+
+.pizza-label {
+    min-width: 150px;
+    vertical-align: top;
+}
+
+.label-input {
+    margin-top: 7px;
+}
+
+.pizza-result {
+    background-color: #FFB;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.pizza-result > div {
+    display: inline-block;
 }

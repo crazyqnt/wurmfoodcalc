@@ -10,14 +10,22 @@
     <body>
         <h1>Wurm Online Food Calculator</h1>
         <div id="app">
-            <div class="player-offset">
-                <b>Player offset:</b> <input type="number" min="0" max="137" v-model.number="offset"/>
+            <div class="app-header">
+                <input type="checkbox" v-model="pizzaMode" :id="pizzaMode" /> <label for="pizzaMode">Pizza Mode</label>
+                <div v-show="!pizzaMode">
+                    <b>Player offset:</b> <input type="number" min="0" max="137" v-model.number="offset"/>
+                </div>
             </div>
-            <div class="explain">
+            <div class="explain" v-show="!pizzaMode">
                 First: if you don't know the players offset, enter the meal you made below and what affinity it gave the player. <br />
                 Then click "Apply" and the value is copied into the field above. <br />
                 To get started, click on "Taste Calibrator". <br />
                 If you already know the offset, enter it above.
+            </div>
+            <div class="explain" v-show="pizzaMode">
+                Configure the default meal that players taste down below by clicking on "Default Meal". <br />
+                Then use the "Pizza Generator" to generate pizzas according to the many possible settings. <br />
+                Don't forget to save the default meal / pizza generator settings for a better experience.
             </div>
             <!--
             <cooker-selector
@@ -36,18 +44,19 @@
             ></ingredient-selector>
             -->
             <section>
-                <div class="section-header" v-on:click="offsetFinder = !offsetFinder">Taste Calibrator</div>
+                <div class="section-header" v-if="!pizzaMode" v-on:click="offsetFinder = !offsetFinder">Taste Calibrator</div>
+                <div class="section-header" v-if="pizzaMode" v-on:click="offsetFinder = !offsetFinder">Default Meal</div>
                 <div class="section-body" v-show="offsetFinder">
-                    <taste-tester v-on:set-offset="setOffset($event)"></taste-tester>
+                    <taste-tester v-on:set-offset="setOffset($event)" v-bind:pizza-mode="pizzaMode"></taste-tester>
                 </div>
             </section>
 
-            <div class="explain">
+            <div class="explain" v-show="!pizzaMode">
                 Now you can either use the "Meal Maker" below which allows you to freely choose the ingredients you use and will display the affinity the meal will result in. <br />
                 Or use one of the generators below to generate a food item to target a specific skill.
             </div>
 
-            <section>
+            <section v-show="!pizzaMode">
                 <div class="section-header" v-on:click="mealMaker = !mealMaker">Meal Maker</div>
                 <div class="section-body" v-show="mealMaker">
                     <meal-maker v-bind:offset="offset"></meal-maker>
@@ -57,7 +66,7 @@
             <section>
                 <div class="section-header" v-on:click="pizzaGenerator = !pizzaGenerator">Pizza Generator</div>
                 <div class="section-body" v-show="pizzaGenerator">
-                    <pizza-generator v-bind:offset="offset"></pizza-generator>
+                    <pizza-generator v-bind:offset="offset" v-bind:pizza-mode="pizzaMode"></pizza-generator>
                 </div>
             </section>
         </div>

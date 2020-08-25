@@ -163,6 +163,21 @@
         return solutions;
     }
 
+    //
+    // INGREDIENT HANDLERS FOR RECIPE GENERATION
+
+    function arrayParseStrings(arr) {
+        let ret = [];
+        for (let x of arr) {
+            if (typeof x === "string") {
+                ret.push(parseInt(x));
+            } else {
+                ret.push(x);
+            }
+        }
+        return ret;
+    }
+
     class IngredientGenerator {
         generateAll() {
             return [];
@@ -173,14 +188,7 @@
         constructor(doughTypes) {
             super();
             if (doughTypes) {
-                this.doughTypes = [];
-                for (let x of doughTypes) {
-                    if (typeof x === "string") {
-                        this.doughTypes.push(parseInt(x));
-                    } else {
-                        this.doughTypes.push(x);
-                    }
-                }
+                this.doughTypes = arrayParseStrings(doughTypes);
             } else {
                 this.doughTypes = [];
                 for (let i = 9; i <= 12; i++) {
@@ -216,14 +224,7 @@
         constructor(meatTypes) {
             super();
             if (meatTypes) {
-                this.meatTypes = [];
-                for (let x of meatTypes) {
-                    if (typeof x === "string") {
-                        this.meatTypes.push(parseInt(x));
-                    } else {
-                        this.meatTypes.push(x);
-                    }
-                }
+                this.meatTypes = arrayParseStrings(meatTypes);
             } else {
                 this.meatTypes = [];
                 // TODO: pastry?
@@ -250,14 +251,7 @@
         constructor(cheeseTypes) {
             super();
             if (cheeseTypes) {
-                this.cheeseTypes = [];
-                for (let x of cheeseTypes) {
-                    if (typeof x === "string") {
-                        this.cheeseTypes.push(parseInt(x));
-                    } else {
-                        this.cheeseTypes.push(x);
-                    }
-                }
+                this.cheeseTypes = arrayParseStrings(cheeseTypes);
             } else {
                 this.cheeseTypes = [];
                 for (let i = 25; i <= 28; i++) {
@@ -279,11 +273,22 @@
         }
     };
 
+    
+    let allHerbs = [44, 46, 65, 41, 38, 64, 50, 42, 43, 48, 39, 51, 45];
+
     class ChoppedHerbGenerator extends IngredientGenerator {
+        constructor(herbTypes) {
+            super();
+            if (herbTypes) {
+                this.herbTypes = arrayParseStrings(herbTypes);
+            } else {
+                this.herbTypes = [...allHerbs];
+            }
+        }
+
         generateAll() {
-            let herbs = [44, 46, 65, 41, 38, 64, 50, 42, 43, 48, 39, 51, 45];
             let ret = [];
-            for (let herb of herbs) {
+            for (let herb of this.herbTypes) {
                 ret.push({
                     ingredient: herb,
                     modifier: 6,
@@ -294,11 +299,21 @@
         }
     };
 
+    let allVeggies = [67, 66, 22, 83, 69, 40, 77, 70, 24, 23, 61, 68];
+
     class ChoppedVegetableGenerator extends IngredientGenerator {
+        constructor(veggieTypes) {
+            super();
+            if (veggieTypes) {
+                this.veggieTypes = arrayParseStrings(veggieTypes);
+            } else {
+                this.veggieTypes = [...allVeggies];
+            }
+        }
+
         generateAll() {
-            let veggies = [67, 66, 22, 83, 69, 40, 77, 70, 24, 23, 61, 68];
             let ret = [];
-            for (let veggie of veggies) {
+            for (let veggie of this.veggieTypes) {
                 ret.push({
                     ingredient: veggie,
                     modifier: 6,
@@ -309,13 +324,21 @@
         }
     };
 
+    let allSpices = [72, 73, 74, 75, 76, 78];
+
     class GroundSpiceGenerator extends IngredientGenerator {
+        constructor(spiceTypes) {
+            super();
+            if (spiceTypes) {
+                this.spiceTypes = arrayParseStrings(spiceTypes);
+            } else {
+                this.spiceTypes = [...allSpices];
+            }
+        }
+
         generateAll() {
             let ret = [];
-            for (let spice = 72; spice <= 78; spice++) {
-                if (spice == 77) {
-                    continue;
-                }
+            for (let spice of this.spiceTypes) {
                 ret.push({
                     ingredient: spice,
                     modifier: 7,
@@ -326,11 +349,21 @@
         }
     };
 
+    let allNuts = [63, 30, 80, 62];
+
     class NutsGenerator extends IngredientGenerator {
+        constructor(nutTypes) {
+            super();
+            if (nutTypes) {
+                this.nutTypes = arrayParseStrings(nutTypes);
+            } else {
+                this.nutTypes = [...allNuts];
+            }
+        }
+
         generateAll() {
-            let nuts = [63, 30, 80, 62];
             let ret = [];
-            for (let nut of nuts) {
+            for (let nut of this.nutTypes) {
                 ret.push({
                     ingredient: nut,
                     modifier: 1,
@@ -456,6 +489,14 @@
             final.push(newTrace);
         }
         return final;
+    }
+
+    //
+    // HELPERS
+
+    function hasSavedDefaultMeal() {
+        return typeof localStorage.meal_ingredients !== "undefined" && typeof localStorage.meal_cooker !== "undefined"
+            && typeof localStorage.meal_cookerRarity !== "undefined" && typeof localStorage.meal_cookerContainer !== "undefined";
     }
 
     // 
@@ -720,7 +761,7 @@
     });
 
     Vue.component('full-selector', {
-        props: ['ingredientsExternal', 'cookerExternal', 'cookerRarityExternal', 'cookerContainerExternal'],
+        props: ['ingredientsExternal', 'cookerExternal', 'cookerRarityExternal', 'cookerContainerExternal', 'enableSave'],
         data: function() {
             let data = {
                 ingredients: [
@@ -798,9 +839,22 @@
                 }
                 value %= modulus;
                 this.$emit('value-update', value);
+            }, saveToBrowser: function() {
+                if (this.enableSave) {
+                    localStorage.meal_ingredients = JSON.stringify(this.ingredients);
+                    localStorage.meal_cooker = JSON.stringify(this.cooker);
+                    localStorage.meal_cookerRarity = JSON.stringify(this.cooker_rarity);
+                    localStorage.meal_cookerContainer = JSON.stringify(this.cooker_container);
+                }
             }
-        },
-        template: `
+        }, mounted: function() {
+            if (hasSavedDefaultMeal() && this.enableSave) {
+                this.ingredients = JSON.parse(localStorage.meal_ingredients);
+                this.cooker = JSON.parse(localStorage.meal_cooker);
+                this.cooker_rarity = JSON.parse(localStorage.meal_cookerRarity);
+                this.cooker_container = JSON.parse(localStorage.meal_cookerContainer);
+            }
+        }, template: `
             <div class="full-selector">
                 Select cooking hardware: 
                 <cooker-selector
@@ -819,7 +873,7 @@
                     v-on:set="setIngredient($event)"
                     v-on:removeMe="removeIngredient($event)"
                 ></ingredient-selector>
-                <button v-on:click="addIngredient()">Add ingredient</button>
+                <button v-on:click="addIngredient()">Add ingredient</button> <button v-if="enableSave" v-on:click="saveToBrowser()">Save default meal</button>
             </div>
         `
     });
@@ -988,6 +1042,7 @@
     });
 
     Vue.component('taste-tester', {
+        props: ['pizzaMode'],
         data: function() {
             return {
                 'selectorVal': 0,
@@ -1018,13 +1073,15 @@
         },
         template: `
             <div class="taste-tester">
-                <full-selector v-on:value-update="valueUpdate($event)"></full-selector>
+                <full-selector v-on:value-update="valueUpdate($event)" v-bind:enableSave="pizzaMode"></full-selector>
                 <br />
-                What did it taste like?
-                <skill-selector v-on:skill-update="skillUpdate($event)"></skill-selector>
-                <br />
-                <div class="offset-result">Your offset: {{ offset }} </div>
-                <button v-on:click="setOffset()">Apply</button>
+                <div v-if="!pizzaMode">
+                    What did it taste like?
+                    <skill-selector v-on:skill-update="skillUpdate($event)"></skill-selector>
+                    <br />
+                    <div class="offset-result">Your offset: {{ offset }} </div>
+                    <button v-on:click="setOffset()">Apply</button>
+                </div>
             </div>
         `
     });
@@ -1112,8 +1169,44 @@
         `
     });
 
+    // https://stackoverflow.com/questions/105034/how-to-create-guid-uuid
+    function uuidv4() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+
+    Vue.component('ingredient-display', {
+        props: ['ingredients'],
+        data: function() {
+            return {
+                'internalkey': uuidv4()
+            };
+        },
+        methods: {
+            ingredientToText: function(ingr) {
+                let name = ingredientData[ingr.ingredient].name;
+                let modifier = modifierData[ingr.modifier].name;
+                if (ingr.modifier == 1) {
+                    modifier = "(" + modifier + ")";
+                }
+                let val = (ingredientData[ingr.ingredient].value + modifierData[ingr.modifier].value) % modulus;
+
+                return name + " " + modifier + " ("+val+")";
+            }
+        },
+        template: `
+            <div>
+                <div class="ingredient-display" v-for="(item, index) in ingredients">
+                    <input type="checkbox" :id="internalkey + index" />
+                    <label :for="internalkey + index">{{ ingredientToText(item) }}</label>
+                </div>
+            </div>
+        `
+    });
+
     Vue.component('pizza-generator', {
-        props: ['offset'],
+        props: ['offset', 'pizzaMode'],
         data: function() {
             let meatTypes = {};
             for (let i = 1; i <= 16; i++) {
@@ -1127,28 +1220,71 @@
             for (let i = 9; i <= 12; i++) {
                 doughTypes[i] = modifierData[i].name;
             }
+            let herbTypes = {};
+            for (let herb of allHerbs) {
+                herbTypes[herb] = ingredientData[herb].name;
+            }
+            let veggieTypes = {};
+            for (let veggie of allVeggies) {
+                veggieTypes[veggie] = ingredientData[veggie].name;
+            }
+            let spiceTypes = {};
+            for (let spice of allSpices) {
+                spiceTypes[spice] = ingredientData[spice].name;
+            }
+            let nutTypes = {};
+            for (let nut of allNuts) {
+                nutTypes[nut] = ingredientData[nut].name;
+            }
             return {
                 'meatTypes': meatTypes,
                 'selectedMeatTypes': ['1', '2', '3', '4', '7', '8', '10', '11', '12', '13', '14', '15'],
-                'doughTypes': doughTypes,
-                'selectedDoughTypes': ['9', '10', '11', '12'],
-                'cheeseTypes': cheeseTypes,
-                'selectedCheeseTypes': ['25', '26', '27', '28'],
-                'forceCheese': false,
                 'minSaussages': 2,
                 'maxSaussages': 4,
-                'choppedHerbs': true,
-                'choppedVeggies': true,
-                'groundSpice': true,
-                'nuts': false,
+                'meatExtended': false,
+
+                'doughTypes': doughTypes,
+                'selectedDoughTypes': ['9', '10', '11', '12'],
+                'doughExtended': false,
+
+                'cheeseTypes': cheeseTypes,
+                'selectedCheeseTypes': ['25', '26', '27', '28'],
+                'minCheese': 0,
+                'maxCheese': 3,
+                'cheeseExtended': false,
+
+                'herbTypes': herbTypes,
+                'selectedHerbTypes': [... allHerbs],
+                'minHerbs': 0,
+                'maxHerbs': 3,
+                'herbExtended': false,
+
+                'vegetableTypes': veggieTypes,
+                'selectedVegetableTypes': [... allVeggies],
+                'minVegetables': 0,
+                'maxVegetables': 3,
+                'vegetableExtended': false,
+
+                'spiceTypes': spiceTypes,
+                'selectedSpiceTypes': [... allSpices],
+                'minSpices': 0,
+                'maxSpices': 3,
+                'spiceExtended': false,
+
+                'nutTypes': nutTypes,
+                'selectedNutTypes': [... allNuts],
+                'minNuts': 0,
+                'maxNuts': 0,
+                'nutExtended': false,
+                
                 'targetSkill': 109,
-                'resultStatus': 0,
-                'result': {
-                    'ingredients': [],
-                    'cooker': 0,
-                    'cookerRarity': 0,
-                    'cookerContainer': 0
-                }
+                'tastedSkill': 109,
+                'ovenRarity': 0,
+                'label': '',
+
+                'showSaveMessage': false,
+                'resultError': false,
+                'results': []
             };
         },
         methods: {
@@ -1159,104 +1295,245 @@
                 }, {
                     'generator': new PassataGenerator(),
                     required: true
-                }, {
-                    'generator': new SausageGenerator(Array.from(this.selectedMeatTypes)),
-                    min: this.minSaussages,
-                    max: this.maxSaussages
                 }];
-                let cheeseGenerator = new CheeseGenerator(Array.from(this.selectedCheeseTypes));
-                if (this.forceCheese) {
+                if (this.maxSaussages >= this.minSaussages && this.maxSaussages > 0) {
                     ingrs.push({
-                        'generator': cheeseGenerator,
-                        min: 1
-                    });
-                } else {
-                    ingrs.push({
-                        'generator': cheeseGenerator
+                        'generator': new SausageGenerator(Array.from(this.selectedMeatTypes)),
+                        min: this.minSaussages,
+                        max: this.maxSaussages
                     });
                 }
-                if (this.choppedHerbs) {
+                if (this.maxCheese >= this.minCheese && this.maxCheese > 0) {
                     ingrs.push({
-                        'generator': new ChoppedHerbGenerator()
+                        'generator': new CheeseGenerator(Array.from(this.selectedCheeseTypes)),
+                        min: this.minCheese,
+                        max: this.maxCheese
                     });
                 }
-                if (this.choppedVeggies) {
+                if (this.maxHerbs >= this.minHerbs && this.maxHerbs > 0) {
                     ingrs.push({
-                        'generator': new ChoppedVegetableGenerator()
+                        'generator': new ChoppedHerbGenerator(Array.from(this.selectedHerbTypes)),
+                        min: this.minHerbs,
+                        max: this.maxHerbs
                     });
                 }
-                if (this.groundSpice) {
+                if (this.maxVegetables >= this.minVegetables && this.maxVegetables > 0) {
                     ingrs.push({
-                        'generator': new GroundSpiceGenerator()
+                        'generator': new ChoppedVegetableGenerator(Array.from(this.selectedVegetableTypes)),
+                        min: this.minVegetables,
+                        max: this.maxVegetables
                     });
                 }
-                if (this.nuts) {
+                if (this.maxSpices >= this.minSpices && this.maxSpices > 0) {
                     ingrs.push({
-                        'generator': new NutsGenerator()
+                        'generator': new GroundSpiceGenerator(Array.from(this.selectedSpiceTypes)),
+                        min: this.minSpices,
+                        max: this.maxSpices
+                    });
+                }
+                if (this.maxNuts >= this.minNuts && this.maxNuts > 0) {
+                    ingrs.push({
+                        'generator': new NutsGenerator(Array.from(this.selectedNutTypes)),
+                        min: this.minNuts,
+                        max: this.maxNuts
                     });
                 }
 
-                let result = findCombination(ingrs, (this.offset + 40 /* Oven */ + 63 /* Baking stone */) % modulus, this.targetSkill);
-                if (result.length > 0) {
-                    this.result.ingredients = result[0];
-                    this.result.cooker = 3;
-                    this.result.cookerRarity = 0; // TODO: make adjustable
-                    this.result.cookerContainer = 10;
-                    this.resultStatus = 1;
+                let startValue;
+                if (this.pizzaMode) {
+                    let mealIngredients = JSON.parse(localStorage.meal_ingredients);
+                    let mealCooker = JSON.parse(localStorage.meal_cooker);
+                    let mealCookerRarity = JSON.parse(localStorage.meal_cookerRarity);
+                    let mealCookerContainer = JSON.parse(localStorage.meal_cookerContainer);
+                    let mealValue = cookerData[mealCooker] + rarityData[mealCookerRarity] + containerData[mealCookerContainer];
+                    for (let ingredient of mealIngredients) {
+                        mealValue += ingredientValue(ingredient);
+                    }
+                    mealValue %= modulus;
+                    startValue = this.tastedSkill - mealValue + rarityData[this.ovenRarity] + 40 /* Oven */ + 63 /* Baking stone */;
+                    while (startValue < 0) {
+                        startValue += modulus;
+                    }
+                    startValue %= modulus;
                 } else {
-                    this.resultStatus = 2;
+                    startValue = (this.offset + rarityData[this.ovenRarity] + 40 /* Oven */ + 63 /* Baking stone */) % modulus;
                 }
-            }, skillUpdate(value) {
+
+                let result = findCombination(ingrs, startValue, this.targetSkill);
+                if (result.length > 0) {
+                    let label = this.label;
+                    if (label === "") {
+                        label = "(no label)";
+                    }
+                    this.results.unshift({
+                        'ingredients': result[0],
+                        'label': label,
+                        'key': uuidv4()
+                    });
+                    this.resultError = false;
+                } else {
+                    this.resultError = true;
+                }
+            }, desiredSkillUpdate(value) {
                 this.targetSkill = value;
+            }, tastedSkillUpdate(value) {
+                this.tastedSkill = value;
+            }, toggle(prop) {
+                this[prop] = !this[prop];
+            }, saveToBrowser() {
+                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity)$/;
+                let saveData = {};
+                for (let key in this) {
+                    if (key.match(saveRegex) != null) {
+                        saveData[key] = this[key];
+                    }
+                }
+                localStorage.pizzaData = JSON.stringify(saveData);
+                this.showSaveMessage = true;
+                setTimeout(() => {
+                    this.showSaveMessage = false;
+                }, 2000);
+            }, removePizza(key) {
+                for (let i = 0; i < this.results.length; i++) {
+                    let pizza = this.results[i];
+                    if (pizza.key == key) {
+                        this.results.splice(i, 1);
+                    }
+                }
+            }
+        },
+        mounted: function() {
+            if (localStorage.pizzaData) {
+                let parsed = JSON.parse(localStorage.pizzaData);
+                for (let key in parsed) {
+                    this[key] = parsed[key];
+                }
             }
         },
         computed: {
-            bearMeat: {get: function() {return this.meatTypes[1];}, set: function(value) {this.meatTypes[1] = value;}},
-            beefMeat: {get: function() {return this.meatTypes[2];}, set: function(value) {this.meatTypes[2] = value;}},
-            canineMeat: {get: function() {return this.meatTypes[3];}, set: function(value) {this.meatTypes[3] = value;}},
-            felineMeat: {get: function() {return this.meatTypes[4];}, set: function(value) {this.meatTypes[4] = value;}},
-            fowlMeat: {get: function() {return this.meatTypes[5];}, set: function(value) {this.meatTypes[5] = value;}},
-            gameMeat: {get: function() {return this.meatTypes[6];}, set: function(value) {this.meatTypes[6] = value;}},
-            horseMeat: {get: function() {return this.meatTypes[7];}, set: function(value) {this.meatTypes[7] = value;}}
+            hasDefaultMeal: {
+                get: function() {
+                    return hasSavedDefaultMeal();
+                }, set: function(value) {
+                    throw "Can not set computed property: hasDefaultMeal";
+                }
+            }
         },
         template: `
             <div class="generator">
-                Desired Affinity: <skill-selector v-on:skill-update="skillUpdate($event)"></skill-selector> <br />
+                <div v-if="pizzaMode">
+                    On the default meal the player tasted:
+                    <skill-selector v-on:skill-update="tastedSkillUpdate($event)"></skill-selector>
+                    <div class="skill-error" v-if="!hasDefaultMeal">
+                        There is currently no saved default meal!
+                    </div>
+                </div>
+                Desired affinity for pizza: <skill-selector v-on:skill-update="desiredSkillUpdate($event)"></skill-selector>
+                You oven has rarity:
+                <select v-model.number="ovenRarity">
+                    <option value="0">Normal +0</option>
+                    <option value="1">Rare +1</option>
+                    <option value="2">Supreme +2</option>
+                    <option value="3">Fantastic +3</option>
+                </select> <br />  <br />
+                
                 <div class="ingredient-category">
-                    Minimum saussages: <input type="number" min="0" v-model.number="minSaussages"/>. Maximum saussages: <input type="number" min="0" v-model.number="maxSaussages"/> <br />
-                    Select desired meat types for saussages: <br />
-                    <div v-for="(value, name) in meatTypes" class="meat-select">
-                        <input type="checkbox" v-model="selectedMeatTypes" :value="name" :id="'pizzaMeat_'+name" /><label :for="'pizzaMeat_'+name">{{ value }}</label>
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('doughExtended')">Dough</h3>
+                    </div>
+                    <div class="ingcat-body" v-show="doughExtended">
+                        Select desired dough types: <br />
+                        <div v-for="(value, name) in doughTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedDoughTypes" :value="name" :id="'pizzaDough_'+name" /><label :for="'pizzaDough_'+name">{{ value }}</label>
+                        </div>
                     </div>
                 </div>
                 <div class="ingredient-category">
-                    Dough types: <br />
-                    <div v-for="(value, name) in doughTypes" class="meat-select">
-                        <input type="checkbox" v-model="selectedDoughTypes" :value="name" :id="'pizzaDough_'+name" /><label :for="'pizzaDough_'+name">{{ value }}</label>
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('meatExtended')">Saussages</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minSaussages"/> | Maximum: <input type="number" min="0" v-model.number="maxSaussages"/>
+                    </div>
+                    <div class="ingcat-body" v-show="meatExtended">
+                        Select desired meat types for saussages: <br />
+                        <div v-for="(value, name) in meatTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedMeatTypes" :value="name" :id="'pizzaMeat_'+name" /><label :for="'pizzaMeat_'+name">{{ value }}</label>
+                        </div>
                     </div>
                 </div>
                 <div class="ingredient-category">
-                    Cheese types: <br />
-                    <div v-for="(value, name) in cheeseTypes" class="meat-select">
-                        <input type="checkbox" v-model="selectedCheeseTypes" :value="name" :id="'pizzaCheese_'+name" /><label :for="'pizzaCheese_'+name">{{ value }}</label>
-                    </div> <br />
-                    <input type="checkbox" v-model="forceCheese" id="pizza_needCheese" /><label for="pizza_needCheese">I want cheese! (Guarantees that cheese will be on the pizza)</label>
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('cheeseExtended')">Cheese</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minCheese"/> | Maximum: <input type="number" min="0" v-model.number="maxCheese"/>
+                    </div>
+                    <div class="ingcat-body" v-show="cheeseExtended">
+                        Select desired cheese types: <br />
+                        <div v-for="(value, name) in cheeseTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedCheeseTypes" :value="name" :id="'pizzaCheese_'+name" /><label :for="'pizzaCheese_'+name">{{ value }}</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="ingredient-category">
-                    Other ingredients: <br />
-                    <input type="checkbox" v-model="choppedHerbs" id="pizza_choppedHerbs" /><label for="pizza_choppedHerbs">Chopped Herbs</label> <br />
-                    <input type="checkbox" v-model="choppedVeggies" id="pizza_choppedVeggies" /><label for="pizza_choppedVeggies">Chopped Vegetables</label> <br />
-                    <input type="checkbox" v-model="groundSpice" id="pizza_groundSpice" /><label for="pizza_groundSpice">Ground Spice</label> <br />
-                    <input type="checkbox" v-model="nuts" id="pizza_nuts" /><label for="pizza_nuts">Nuts</label>
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('herbExtended')">Chopped Herbs</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minHerbs"/> | Maximum: <input type="number" min="0" v-model.number="maxHerbs"/>
+                    </div>
+                    <div class="ingcat-body" v-show="herbExtended">
+                        Select desired herb types: <br />
+                        <div v-for="(value, name) in herbTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedHerbTypes" :value="name" :id="'pizzaHerb_'+name" /><label :for="'pizzaHerb_'+name">{{ value }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('vegetableExtended')">Chopped Vegetables</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minVegetables"/> | Maximum: <input type="number" min="0" v-model.number="maxVegetables"/>
+                    </div>
+                    <div class="ingcat-body" v-show="vegetableExtended">
+                        Select desired vegetable types: <br />
+                        <div v-for="(value, name) in vegetableTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedVegetableTypes" :value="name" :id="'pizzaVeggie_'+name" /><label :for="'pizzaVeggie_'+name">{{ value }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('spiceExtended')">Ground Spice</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minSpices"/> | Maximum: <input type="number" min="0" v-model.number="maxSpices"/>
+                    </div>
+                    <div class="ingcat-body" v-show="spiceExtended">
+                        Select desired spice types: <br />
+                        <div v-for="(value, name) in spiceTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedSpiceTypes" :value="name" :id="'pizzaSpice_'+name" /><label :for="'pizzaSpice_'+name">{{ value }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('nutExtended')">Nuts</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minNuts"/> | Maximum: <input type="number" min="0" v-model.number="maxNuts"/>
+                    </div>
+                    <div class="ingcat-body" v-show="nutExtended">
+                        Select desired nut types: <br />
+                        <div v-for="(value, name) in nutTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedNutTypes" :value="name" :id="'pizzaNuts_'+name" /><label :for="'pizzaNuts_'+name">{{ value }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="label-input">
+                    Pizza label: <input type="text" v-model="label" />
                 </div>
                 <br />
-                <button v-on:click="calculate()">Make a pizza 🍕</button>
+                <button v-on:click="calculate()">Make a pizza 🍕</button> <button v-on:click="saveToBrowser()">Save pizza settings</button> <div class="save-feedback" v-if="showSaveMessage">Saved!</div>
 
-                <full-selector v-if="resultStatus == 1" v-bind:ingredientsExternal="result.ingredients" v-bind:cookerExternal="result.cooker"
-                    v-bind:cookerRarityExternal="result.cookerRarity" v-bind:cookerContainerExternal="result.cookerContainer"
-                ></full-selector>
-                <div class="skill-error" v-if="resultStatus == 2">
+                <div class="skill-error" v-if="resultError">
                     Could not find a recipe
+                </div>
+                <div>
+                    <div v-for="result in results" v-bind:key="result.key" class="pizza-result">
+                        <div class="pizza-label">{{ result.label }} <br /> <button v-on:click="removePizza(result.key)">Remove</button></div>
+                        <ingredient-display v-bind:ingredients="result.ingredients"></ingredient-display>
+                    </div>
                 </div>
             </div>
         `
@@ -1268,7 +1545,8 @@
             offset: 0,
             offsetFinder: false,
             mealMaker: false,
-            pizzaGenerator: false
+            pizzaGenerator: false,
+            pizzaMode: true
         },
         methods: {
             setOffset(offset) {

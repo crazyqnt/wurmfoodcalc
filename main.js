@@ -435,6 +435,9 @@
         }
     };
 
+    let allBaconModifiers = [1, 17];
+    let allFriesModifiers = [1, 17];
+
     function ingredientValue(ingredient) {
         let value = 0;
         value += ingredientData[ingredient.ingredient].value;
@@ -1300,6 +1303,14 @@
             for (let i = 9; i <= 12; i++) {
                 doughTypes[i] = modifierData[i].name;
             }
+            let friesModifierTypes = {};
+            for (let modifier of allFriesModifiers) {
+                friesModifierTypes[modifier] = modifierData[modifier].name;
+            }
+            let baconModifierTypes = {};
+            for (let modifier of allBaconModifiers) {
+                baconModifierTypes[modifier] = modifierData[modifier].name;
+            }
             let herbTypes = {};
             for (let herb of allHerbs) {
                 herbTypes[herb] = ingredientData[herb].name;
@@ -1349,10 +1360,14 @@
 
                 'minFries': 0,
                 'maxFries': 1,
+                'friesModifierTypes': friesModifierTypes,
+                'selectedFriesModifierTypes': [... allFriesModifiers],
                 'friesExtended': false,
                 
                 'minBacon': 0,
                 'maxBacon': 1,
+                'baconModifierTypes': baconModifierTypes,
+                'selectedBaconModifierTypes': [... allBaconModifiers],
                 'baconExtended': false,
 
                 'herbTypes': herbTypes,
@@ -1429,14 +1444,14 @@
                 }
                 if (this.maxFries >= this.minFries && this.maxFries > 0) {
                     ingrs.push({
-                        'generator': new GenericIngredientModifierGenerator([107], [17]),
+                        'generator': new GenericIngredientModifierGenerator([107], Array.from(this.selectedFriesModifierTypes)),
                         min: this.minFries,
                         max: this.maxFries
                     });
                 }
                 if (this.maxBacon >= this.minBacon && this.maxBacon > 0) {
                     ingrs.push({
-                        'generator': new GenericIngredientModifierGenerator([104], [1]),
+                        'generator': new GenericIngredientModifierGenerator([104], Array.from(this.selectedBaconModifierTypes)),
                         min: this.minBacon,
                         max: this.maxBacon
                     });
@@ -1649,7 +1664,10 @@
                         Minimum: <input type="number" min="0" v-model.number="minFries"/> | Maximum: <input type="number" min="0" v-model.number="maxFries"/>
                     </div>
                     <div class="ingcat-body" v-show="friesExtended">
-                        Nothing to change here. Fries will be cooked.
+                        Select desired modifiers: <br />
+                        <div v-for="(value, name) in friesModifierTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedFriesModifierTypes" :value="name" :id="'pizzaFriesMod_'+name" /><label :for="'pizzaFriesMod_'+name">{{ value }}</label>
+                        </div>
                     </div>
                 </div>
                 <div class="ingredient-category">
@@ -1658,7 +1676,10 @@
                         Minimum: <input type="number" min="0" v-model.number="minBacon"/> | Maximum: <input type="number" min="0" v-model.number="maxBacon"/>
                     </div>
                     <div class="ingcat-body" v-show="baconExtended">
-                        Nothing to change here. Bacon will be raw.
+                        Select desired modifiers: <br />
+                        <div v-for="(value, name) in baconModifierTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedBaconModifierTypes" :value="name" :id="'pizzaBaconMod_'+name" /><label :for="'pizzaBaconMod_'+name">{{ value }}</label>
+                        </div>
                     </div>
                 </div>
                 <div class="ingredient-category">

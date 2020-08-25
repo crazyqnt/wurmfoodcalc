@@ -19,6 +19,25 @@
     //
     // GENERATOR
 
+    // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+
     class Node {
         constructor(id) {
             this.id = id;
@@ -127,7 +146,7 @@
         }
     };
 
-    function bfs(multiGraph, start) {
+    function bfs(multiGraph, start, randomizeEdges = false) {
         let backEdges = {};
         let visited = {};
         function idxToString(idx) {
@@ -149,7 +168,11 @@
                 }
                 solutions.push(trace);
             }
-            for (let edge of node.edges()) {
+            let edges = node.edges();
+            if (randomizeEdges) {
+                shuffle(edges);
+            }
+            for (let edge of edges) {
                 if (!visited[idxToString(edge.to)]) {
                     q.append(edge.to);
                     visited[idxToString(edge.to)] = true;
@@ -446,7 +469,7 @@
         return value;
     }
 
-    function findCombination(recipe, startValue, targetValue) {
+    function findCombination(recipe, startValue, targetValue, moreDiverse = true) {
         // Create the graph!
         let graph = new MultiGraph();
 
@@ -541,7 +564,7 @@
         }
 
         // Graph should be done
-        let result = bfs(graph, startNodeId);
+        let result = bfs(graph, startNodeId, moreDiverse);
         let final = [];
         for (let trace of result) {
             let newTrace = [];
@@ -1398,6 +1421,7 @@
                 'targetSkill': 109,
                 'tastedSkill': 109,
                 'ovenRarity': 0,
+                'moreDiverse': true,
                 'label': '',
 
                 'showSaveMessage': false,
@@ -1505,10 +1529,11 @@
                     startValue = (this.offset + rarityData[this.ovenRarity] + 40 /* Oven */ + 63 /* Baking stone */) % modulus;
                 }
 
-                let result = findCombination(ingrs, startValue, this.targetSkill);
+                result = findCombination(ingrs, startValue, this.targetSkill, this.moreDiverse);
+                
                 if (result.length > 0) {
                     let best = 0;
-                    for (let i = 0; i < result.length; i++) {
+                    for (let i = 1; i < result.length; i++) {
                         if (result[i].length >= this.minIngredients) {
                             best = i;
                             break;
@@ -1534,7 +1559,7 @@
             }, toggle(prop) {
                 this[prop] = !this[prop];
             }, saveToBrowser() {
-                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity|minIngredients)$/;
+                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity|minIngredients|moreDiverse)$/;
                 let saveData = {};
                 for (let key in this) {
                     if (key.match(saveRegex) != null) {
@@ -1591,8 +1616,9 @@
                 </select> <br />  <br />
                 
                 <div class="slider">
-                    <div class="slider-left">Minimum number of ingredients (will not always work!): {{ minIngredients }}</div>
-                    <div class="slider-right"><input type="range" v-model.number="minIngredients" step="1" min="1" max="30" /></div>
+                    <div>Minimum number of ingredients (will not always work!): {{ minIngredients }}</div>
+                    <div class="slider-range"><input type="range" v-model.number="minIngredients" step="1" min="1" max="30" /></div>
+                    <div><input type="checkbox" v-model="moreDiverse" id="pizza_md" /><label for="pizza_md">Try to make a more diverse pizza (to avoid repeating ingredient types). This currently uses randomness, so click 'Make a pizza' again until you are satisfied (and try changing the minimum/maximum settings of ingredients).</label></div>
                 </div>
                 <div class="ingredient-category">
                     <div class="ingcat-header">

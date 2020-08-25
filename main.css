@@ -120,6 +120,6 @@ section {
     background-color: #AAC;
 }
 
-.slider-right > input {
+.slider-range > input {
     min-width: 300px;
 }

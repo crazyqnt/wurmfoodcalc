@@ -4,7 +4,7 @@
 
     let ingredientData = {"0": {"name": "Nothing", "value": 0}, "1": {"name": "Bear", "value": 16}, "2": {"name": "Beef", "value": 17}, "3": {"name": "Canine", "value": 18}, "5": {"name": "Dragon", "value": 20}, "4": {"name": "Feline", "value": 19}, "6": {"name": "Fowl", "value": 21}, "7": {"name": "Game", "value": 22}, "8": {"name": "Horse", "value": 23}, "9": {"name": "Human", "value": 24}, "10": {"name": "Humanoid", "value": 25}, "11": {"name": "Insect", "value": 26}, "12": {"name": "Lamb", "value": 27}, "113": {"name": "Pastry", "value": 116}, "13": {"name": "Pork", "value": 28}, "14": {"name": "Seafood", "value": 29}, "15": {"name": "Snake", "value": 30}, "16": {"name": "Tough", "value": 31}, "92": {"name": "Brook Trout", "value": 19}, "86": {"name": "Carp", "value": 18}, "87": {"name": "Catfish", "value": 14}, "98": {"name": "Dorado", "value": 14}, "89": {"name": "Herring", "value": 13}, "94": {"name": "Marlin", "value": 9}, "96": {"name": "Octopus", "value": 12}, "93": {"name": "Perch", "value": 17}, "90": {"name": "Pike", "value": 11}, "91": {"name": "Roach", "value": 16}, "97": {"name": "Sailfish", "value": 13}, "85": {"name": "Smallmouth Bass", "value": 12}, "88": {"name": "Snook", "value": 15}, "99": {"name": "Tuna", "value": 15}, "95": {"name": "White Shark", "value": 11}, "67": {"name": "Cabbage", "value": 42}, "66": {"name": "Carrot", "value": 41}, "22": {"name": "Corn", "value": 44}, "83": {"name": "Cucumber", "value": 17}, "69": {"name": "Lettuce", "value": 45}, "40": {"name": "Onion", "value": 91}, "77": {"name": "Pea", "value": 58}, "70": {"name": "Pea Pod", "value": 46}, "24": {"name": "Potato", "value": 47}, "23": {"name": "Pumpkin", "value": 45}, "61": {"name": "Rice", "value": 68}, "68": {"name": "Tomato", "value": 43}, "44": {"name": "Basil", "value": 95}, "46": {"name": "Belladonna", "value": 97}, "65": {"name": "Fennel", "value": 39}, "41": {"name": "Garlic", "value": 92}, "38": {"name": "Lovage", "value": 89}, "64": {"name": "Mint", "value": 38}, "50": {"name": "Nettles", "value": 101}, "42": {"name": "Oregano", "value": 93}, "43": {"name": "Parsley", "value": 94}, "48": {"name": "Rosemary", "value": 99}, "39": {"name": "Sage", "value": 90}, "51": {"name": "Sassafras", "value": 102}, "45": {"name": "Thyme", "value": 96}, "72": {"name": "Cumin", "value": 48}, "78": {"name": "Fennel Seed", "value": 59}, "73": {"name": "Ginger", "value": 49}, "74": {"name": "Nutmeg", "value": 50}, "75": {"name": "Paprika", "value": 51}, "76": {"name": "Turmeric", "value": 52}, "63": {"name": "Chestnut", "value": 17}, "30": {"name": "Hazelnuts", "value": 8}, "80": {"name": "Pinenut", "value": 92}, "62": {"name": "Walnut", "value": 16}, "49": {"name": "Blueberry", "value": 100}, "53": {"name": "Cherries", "value": 7}, "52": {"name": "Lingonberry", "value": 103}, "81": {"name": "Raspberries", "value": 104}, "47": {"name": "Strawberries", "value": 98}, "18": {"name": "Barley", "value": 23}, "116": {"name": "Cornflour", "value": 128}, "21": {"name": "Oat", "value": 25}, "20": {"name": "Rye", "value": 23}, "19": {"name": "Wheat", "value": 25}, "28": {"name": "Buffalo Cheese", "value": 87}, "25": {"name": "Cheese", "value": 84}, "27": {"name": "Feta Cheese", "value": 86}, "26": {"name": "Goat Cheese", "value": 85}, "55": {"name": "Blue Grapes", "value": 9}, "17": {"name": "Green Apple", "value": 18}, "57": {"name": "Green Grapes", "value": 12}, "54": {"name": "Lemon", "value": 8}, "56": {"name": "Olives", "value": 10}, "84": {"name": "Orange", "value": 53}, "82": {"name": "Pineapple", "value": 5}, "104": {"name": "Bacon", "value": 79}, "32": {"name": "Black Mushroom", "value": 121}, "35": {"name": "Blue Mushroom", "value": 124}, "33": {"name": "Brown Mushroom", "value": 122}, "79": {"name": "Cocoa Bean", "value": 63}, "118": {"name": "Corn oil", "value": 5}, "117": {"name": "Cotton Seed Oil", "value": 121}, "100": {"name": "Crisps", "value": 133}, "60": {"name": "Egg", "value": 68}, "107": {"name": "Fries", "value": 111}, "109": {"name": "Gravy", "value": 106}, "31": {"name": "Green Mushroom", "value": 120}, "106": {"name": "Haggis", "value": 127}, "29": {"name": "Honey", "value": 89}, "58": {"name": "Maple Sap", "value": 18}, "112": {"name": "Maple Syrup", "value": 17}, "114": {"name": "Olive oil", "value": 20}, "102": {"name": "Passata", "value": 114}, "108": {"name": "Pesto", "value": 117}, "36": {"name": "Red Mushroom", "value": 125}, "37": {"name": "Salt", "value": 99}, "71": {"name": "Sugar", "value": 47}, "111": {"name": "Vinegar", "value": 22}, "110": {"name": "Water", "value": 6}, "34": {"name": "Yellow Mushroom", "value": 123}, "115": {"name": "Batter", "value": 82}, "105": {"name": "Bread", "value": 127}, "103": {"name": "Dough", "value": 52}, "101": {"name": "Sliced Bread", "value": 130}};
 
-    let modifierData = {"1": {"name": "Whole", "value": 0}, "2": {"name": "Fried", "value": 1}, "3": {"name": "Roasted", "value": 4}, "4": {"name": "Diced", "value": 16}, "5": {"name": "Minced", "value": 32}, "6": {"name": "Chopped", "value": 16}, "7": {"name": "Ground", "value": 16}, "8": {"name": "Steamed", "value": 5}, "9": {"name": "Rye", "value": 3}, "10": {"name": "Oat", "value": 4}, "11": {"name": "Barley", "value": 5}, "12": {"name": "Wheat", "value": 6}, "13": {"name": "Sausage Meat", "value": 132}, "14": {"name": "Sausage Veg", "value": 76}, "15": {"name": "Jam", "value": 28}, "16": {"name": "Mashed", "value": 32}, "17": {"name": "Cooked", "value": 7}, "18": {"name": "Fresh", "value": 128}, "19": {"name": "Red wine (Vinegar)", "value": 107}};
+    let modifierData = {"1": {"name": "Whole", "value": 0}, "2": {"name": "Fried", "value": 1}, "3": {"name": "Roasted", "value": 4}, "4": {"name": "Diced", "value": 16}, "5": {"name": "Minced", "value": 32}, "6": {"name": "Chopped", "value": 16}, "7": {"name": "Ground", "value": 16}, "8": {"name": "Steamed", "value": 5}, "9": {"name": "Rye", "value": 3}, "10": {"name": "Oat", "value": 4}, "11": {"name": "Barley", "value": 5}, "12": {"name": "Wheat", "value": 6}, "13": {"name": "Sausage Meat", "value": 132}, "14": {"name": "Sausage Veg", "value": 76}, "15": {"name": "Jam", "value": 28}, "16": {"name": "Mashed", "value": 32}, "17": {"name": "Cooked", "value": 7}, "18": {"name": "Fresh", "value": 128}, "19": {"name": "Red wine (Vinegar)", "value": 107}, "190": {"name": "Grilled", "value": 2}};
 
     let rarityData = {"0": 0, "1": 1, "2": 2, "3": 3};
 
@@ -247,6 +247,42 @@
         }
     };
 
+    let allMeatModifiers = [1, 2, 3, 4, 5];
+
+    class MeatGenerator extends IngredientGenerator {
+        constructor(meatTypes, modifierTypes) {
+            super();
+            if (meatTypes) {
+                this.meatTypes = arrayParseStrings(meatTypes);
+            } else {
+                this.meatTypes = [];
+                // TODO: pastry?
+                for (let i = 1; i <= 16; i++) {
+                    this.meatTypes.push(i);
+                }
+            }
+            if (modifierTypes) {
+                this.modifierTypes = arrayParseStrings(modifierTypes);
+            } else {
+                this.modifierTypes = [...allMeatModifiers];
+            }
+        }
+
+        generateAll() {
+            let ret = [];
+            for (let type of this.meatTypes) {
+                for (let modifier of this.modifierTypes) {
+                    ret.push({
+                        ingredient: type,
+                        modifier: modifier,
+                        rarity: 0
+                    });
+                }
+            }
+            return ret;
+        }
+    };
+
     class CheeseGenerator extends IngredientGenerator {
         constructor(cheeseTypes) {
             super();
@@ -374,6 +410,31 @@
         }
     };
 
+    let allFish = [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99];
+    let allFishModifiers = [1, 3, 8, 190];
+
+    class GenericIngredientModifierGenerator extends IngredientGenerator {
+        constructor(ingredientTypes, modifierTypes) {
+            super();
+            this.ingredientTypes = arrayParseStrings(ingredientTypes);
+            this.modifierTypes = arrayParseStrings(modifierTypes);
+        }
+
+        generateAll() {
+            let ret = [];
+            for (let type of this.ingredientTypes) {
+                for (let modifier of this.modifierTypes) {
+                    ret.push({
+                        ingredient: type,
+                        modifier: modifier,
+                        rarity: 0
+                    });
+                }
+            }
+            return ret;
+        }
+    };
+
     function ingredientValue(ingredient) {
         let value = 0;
         value += ingredientData[ingredient.ingredient].value;
@@ -470,7 +531,7 @@
 
         // Handle all infinite components
         for (let component of recipe) {
-            if (!component.required && !component.min && !component.max) {
+            if (!component.required && typeof component.max === "undefined" && typeof component.max === "undefined") {
                 addNextNodes(lastGraph, lastGraph, component._generated);
                 markEndNode(lastGraph); // just in cased the node was only just added. can be called multiple times
             }
@@ -691,6 +752,7 @@
                 <option value="17">Cooked +7</option>
                 <option value="18">Fresh +128</option>
                 <option value="19">Red wine (Vinegar) +107</option>
+                <option value="190">Grilled +2</option>
             </select>
             <select v-model="rarityLocal">
                 <option value="0">Normal +0</option>
@@ -771,7 +833,8 @@
                 ],
                 cooker: 0,
                 cooker_rarity: 0,
-                cooker_container: 0
+                cooker_container: 0,
+                showSaveMessage: false
             };
             if (typeof this.ingredientsExternal !== 'undefined') {
                 data.ingredients = this.ingredientsExternal;
@@ -845,6 +908,10 @@
                     localStorage.meal_cooker = JSON.stringify(this.cooker);
                     localStorage.meal_cookerRarity = JSON.stringify(this.cooker_rarity);
                     localStorage.meal_cookerContainer = JSON.stringify(this.cooker_container);
+                    this.showSaveMessage = true;
+                    setTimeout(() => {
+                        this.showSaveMessage = false;
+                    }, 2000);
                 }
             }
         }, mounted: function() {
@@ -874,6 +941,7 @@
                     v-on:removeMe="removeIngredient($event)"
                 ></ingredient-selector>
                 <button v-on:click="addIngredient()">Add ingredient</button> <button v-if="enableSave" v-on:click="saveToBrowser()">Save default meal</button>
+                <div class="save-feedback" v-if="showSaveMessage">Saved!</div>
             </div>
         `
     });
@@ -1216,6 +1284,18 @@
             for (let i = 25; i <= 28; i++) {
                 cheeseTypes[i] = ingredientData[i].name;
             }
+            let meatModifierTypes = {};
+            for (let modifier of allMeatModifiers) {
+                meatModifierTypes[modifier] = modifierData[modifier].name;
+            }
+            let fishTypes = {};
+            for (let fish of allFish) {
+                fishTypes[fish] = ingredientData[fish].name;
+            }
+            let fishModifierTypes = {};
+            for (let modifier of allFishModifiers) {
+                fishModifierTypes[modifier] = modifierData[modifier].name;
+            }
             let doughTypes = {};
             for (let i = 9; i <= 12; i++) {
                 doughTypes[i] = modifierData[i].name;
@@ -1241,6 +1321,12 @@
                 'selectedMeatTypes': ['1', '2', '3', '4', '7', '8', '10', '11', '12', '13', '14', '15'],
                 'minSaussages': 2,
                 'maxSaussages': 4,
+                'saussageExtended': false,
+
+                'meatModifierTypes': meatModifierTypes,
+                'selectedMeatModifierTypes': [... allMeatModifiers],
+                'minMeat': 0,
+                'maxMeat': 3,
                 'meatExtended': false,
 
                 'doughTypes': doughTypes,
@@ -1252,6 +1338,22 @@
                 'minCheese': 0,
                 'maxCheese': 3,
                 'cheeseExtended': false,
+
+                'fishTypes': fishTypes,
+                'selectedFishTypes': [... allFish],
+                'fishModifierTypes': fishModifierTypes,
+                'selectedFishModifierTypes': [... allFishModifiers],
+                'minFish': 0,
+                'maxFish': 3,
+                'fishExtended': false,
+
+                'minFries': 0,
+                'maxFries': 1,
+                'friesExtended': false,
+                
+                'minBacon': 0,
+                'maxBacon': 1,
+                'baconExtended': false,
 
                 'herbTypes': herbTypes,
                 'selectedHerbTypes': [... allHerbs],
@@ -1277,6 +1379,7 @@
                 'maxNuts': 0,
                 'nutExtended': false,
                 
+                'minIngredients': 5,
                 'targetSkill': 109,
                 'tastedSkill': 109,
                 'ovenRarity': 0,
@@ -1308,6 +1411,34 @@
                         'generator': new CheeseGenerator(Array.from(this.selectedCheeseTypes)),
                         min: this.minCheese,
                         max: this.maxCheese
+                    });
+                }
+                if (this.maxMeat >= this.minMeat && this.maxMeat > 0) {
+                    ingrs.push({
+                        'generator': new MeatGenerator(Array.from(this.selectedMeatTypes), Array.from(this.selectedMeatModifierTypes)),
+                        min: this.minMeat,
+                        max: this.maxMeat
+                    });
+                }
+                if (this.maxFish >= this.minFish && this.maxFish > 0) {
+                    ingrs.push({
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedFishTypes), Array.from(this.selectedFishModifierTypes)),
+                        min: this.minFish,
+                        max: this.maxFish
+                    });
+                }
+                if (this.maxFries >= this.minFries && this.maxFries > 0) {
+                    ingrs.push({
+                        'generator': new GenericIngredientModifierGenerator([107], [17]),
+                        min: this.minFries,
+                        max: this.maxFries
+                    });
+                }
+                if (this.maxBacon >= this.minBacon && this.maxBacon > 0) {
+                    ingrs.push({
+                        'generator': new GenericIngredientModifierGenerator([104], [1]),
+                        min: this.minBacon,
+                        max: this.maxBacon
                     });
                 }
                 if (this.maxHerbs >= this.minHerbs && this.maxHerbs > 0) {
@@ -1361,12 +1492,19 @@
 
                 let result = findCombination(ingrs, startValue, this.targetSkill);
                 if (result.length > 0) {
+                    let best = 0;
+                    for (let i = 0; i < result.length; i++) {
+                        if (result[i].length >= this.minIngredients) {
+                            best = i;
+                            break;
+                        }
+                    }
                     let label = this.label;
                     if (label === "") {
                         label = "(no label)";
                     }
                     this.results.unshift({
-                        'ingredients': result[0],
+                        'ingredients': result[best],
                         'label': label,
                         'key': uuidv4()
                     });
@@ -1381,7 +1519,7 @@
             }, toggle(prop) {
                 this[prop] = !this[prop];
             }, saveToBrowser() {
-                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity)$/;
+                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity|minIngredients)$/;
                 let saveData = {};
                 for (let key in this) {
                     if (key.match(saveRegex) != null) {
@@ -1437,6 +1575,10 @@
                     <option value="3">Fantastic +3</option>
                 </select> <br />  <br />
                 
+                <div class="slider">
+                    <div class="slider-left">Minimum number of ingredients (will not always work!): {{ minIngredients }}</div>
+                    <div class="slider-right"><input type="range" v-model.number="minIngredients" step="1" min="1" max="30" /></div>
+                </div>
                 <div class="ingredient-category">
                     <div class="ingcat-header">
                         <h3 v-on:click="toggle('doughExtended')">Dough</h3>
@@ -1450,10 +1592,10 @@
                 </div>
                 <div class="ingredient-category">
                     <div class="ingcat-header">
-                        <h3 v-on:click="toggle('meatExtended')">Saussages</h3>
+                        <h3 v-on:click="toggle('saussageExtended')">Saussages</h3>
                         Minimum: <input type="number" min="0" v-model.number="minSaussages"/> | Maximum: <input type="number" min="0" v-model.number="maxSaussages"/>
                     </div>
-                    <div class="ingcat-body" v-show="meatExtended">
+                    <div class="ingcat-body" v-show="saussageExtended">
                         Select desired meat types for saussages: <br />
                         <div v-for="(value, name) in meatTypes" class="meat-select">
                             <input type="checkbox" v-model="selectedMeatTypes" :value="name" :id="'pizzaMeat_'+name" /><label :for="'pizzaMeat_'+name">{{ value }}</label>
@@ -1470,6 +1612,53 @@
                         <div v-for="(value, name) in cheeseTypes" class="meat-select">
                             <input type="checkbox" v-model="selectedCheeseTypes" :value="name" :id="'pizzaCheese_'+name" /><label :for="'pizzaCheese_'+name">{{ value }}</label>
                         </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('meatExtended')">Meat</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minMeat"/> | Maximum: <input type="number" min="0" v-model.number="maxMeat"/>
+                    </div>
+                    <div class="ingcat-body" v-show="meatExtended">
+                        Meat types are the same as selected under "Saussages". Select desired modifiers: <br />
+                        <div v-for="(value, name) in meatModifierTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedMeatModifierTypes" :value="name" :id="'pizzaMeatMod_'+name" /><label :for="'pizzaMeatMod_'+name">{{ value }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('fishExtended')">Fish</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minFish"/> | Maximum: <input type="number" min="0" v-model.number="maxFish"/>
+                    </div>
+                    <div class="ingcat-body" v-show="fishExtended">
+                        Select desired fish types: <br />
+                        <div v-for="(value, name) in fishTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedFishTypes" :value="name" :id="'pizzaFish_'+name" /><label :for="'pizzaFish_'+name">{{ value }}</label>
+                        </div>
+                        <br />
+                        Select desired modifiers: <br />
+                        <div v-for="(value, name) in fishModifierTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedFishModifierTypes" :value="name" :id="'pizzaFishMod_'+name" /><label :for="'pizzaFishMod_'+name">{{ value }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('friesExtended')">Fries</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minFries"/> | Maximum: <input type="number" min="0" v-model.number="maxFries"/>
+                    </div>
+                    <div class="ingcat-body" v-show="friesExtended">
+                        Nothing to change here. Fries will be cooked.
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('baconExtended')">Bacon</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minBacon"/> | Maximum: <input type="number" min="0" v-model.number="maxBacon"/>
+                    </div>
+                    <div class="ingcat-body" v-show="baconExtended">
+                        Nothing to change here. Bacon will be raw.
                     </div>
                 </div>
                 <div class="ingredient-category">

@@ -115,3 +115,11 @@ section {
 .pizza-result > div {
     display: inline-block;
 }
+
+.slider {
+    background-color: #AAC;
+}
+
+.slider-right > input {
+    min-width: 300px;
+}

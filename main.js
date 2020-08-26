@@ -469,7 +469,10 @@
         return value;
     }
 
-    function findCombination(recipe, startValue, targetValue, moreDiverse = true) {
+    function findCombination(recipe, startValue, targetValue, randomOptions = null) {
+        let shuffleIngredients = (!!randomOptions) ? !!randomOptions.shuffleIngredients : false;
+        let shuffleEdges = (!!randomOptions) ? !!randomOptions.shuffleEdges : false;
+
         // Create the graph!
         let graph = new MultiGraph();
 
@@ -531,6 +534,10 @@
 
         markEndNode(lastGraph);
 
+        if (shuffleIngredients) {
+            shuffle(recipe);
+        }
+
         // Handle all optional but maximum amount components
         for (let component of recipe) {
             if (typeof component.max === "number") {
@@ -564,7 +571,7 @@
         }
 
         // Graph should be done
-        let result = bfs(graph, startNodeId, moreDiverse);
+        let result = bfs(graph, startNodeId, shuffleEdges);
         let final = [];
         for (let trace of result) {
             let newTrace = [];
@@ -1353,10 +1360,11 @@
             return {
                 'meatTypes': meatTypes,
                 'selectedMeatTypes': ['1', '2', '3', '4', '7', '8', '10', '11', '12', '13', '14', '15'],
-                'minSaussages': 2,
-                'maxSaussages': 4,
-                'saussageExtended': false,
+                'minSausages': 2,
+                'maxSausages': 4,
+                'sausageExtended': false,
 
+                'selectedRawMeatTypes': ['1', '2', '3', '4', '7', '8', '10', '11', '12', '13', '14', '15'],
                 'meatModifierTypes': meatModifierTypes,
                 'selectedMeatModifierTypes': [... allMeatModifiers],
                 'minMeat': 0,
@@ -1422,6 +1430,7 @@
                 'tastedSkill': 109,
                 'ovenRarity': 0,
                 'moreDiverse': true,
+                'evenMoreDiverse': false,
                 'label': '',
 
                 'showSaveMessage': false,
@@ -1438,11 +1447,11 @@
                     'generator': new PassataGenerator(),
                     required: true
                 }];
-                if (this.maxSaussages >= this.minSaussages && this.maxSaussages > 0) {
+                if (this.maxSausages >= this.minSausages && this.maxSausages > 0) {
                     ingrs.push({
                         'generator': new SausageGenerator(Array.from(this.selectedMeatTypes)),
-                        min: this.minSaussages,
-                        max: this.maxSaussages
+                        min: this.minSausages,
+                        max: this.maxSausages
                     });
                 }
                 if (this.maxCheese >= this.minCheese && this.maxCheese > 0) {
@@ -1454,7 +1463,7 @@
                 }
                 if (this.maxMeat >= this.minMeat && this.maxMeat > 0) {
                     ingrs.push({
-                        'generator': new MeatGenerator(Array.from(this.selectedMeatTypes), Array.from(this.selectedMeatModifierTypes)),
+                        'generator': new MeatGenerator(Array.from(this.selectedRawMeatTypes), Array.from(this.selectedMeatModifierTypes)),
                         min: this.minMeat,
                         max: this.maxMeat
                     });
@@ -1529,7 +1538,10 @@
                     startValue = (this.offset + rarityData[this.ovenRarity] + 40 /* Oven */ + 63 /* Baking stone */) % modulus;
                 }
 
-                result = findCombination(ingrs, startValue, this.targetSkill, this.moreDiverse);
+                result = findCombination(ingrs, startValue, this.targetSkill, {
+                    'shuffleEdges': this.moreDiverse,
+                    'shuffleIngredients': this.evenMoreDiverse
+                });
                 
                 if (result.length > 0) {
                     let best = 0;
@@ -1543,9 +1555,16 @@
                     if (label === "") {
                         label = "(no label)";
                     }
+                    let affinities;
+                    if (this.pizzaMode) {
+                        affinities = skillData[this.tastedSkill] + ' to '+ skillData[this.targetSkill];
+                    } else {
+                        affinities = skillData[this.targetSkill];
+                    }
                     this.results.unshift({
                         'ingredients': result[best],
                         'label': label,
+                        'affinities': affinities,
                         'key': uuidv4()
                     });
                     this.resultError = false;
@@ -1559,7 +1578,7 @@
             }, toggle(prop) {
                 this[prop] = !this[prop];
             }, saveToBrowser() {
-                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity|minIngredients|moreDiverse)$/;
+                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity|(even)?[mM]oreDiverse)$/;
                 let saveData = {};
                 for (let key in this) {
                     if (key.match(saveRegex) != null) {
@@ -1583,8 +1602,15 @@
         mounted: function() {
             if (localStorage.pizzaData) {
                 let parsed = JSON.parse(localStorage.pizzaData);
+                if (!parsed['selectedRawMeatTypes']) {
+                    parsed['selectedRawMeatTypes'] = parsed['selectedMeatTypes'];
+                }
                 for (let key in parsed) {
-                    this[key] = parsed[key];
+                    let newKey = key;
+                    if (key.indexOf("aussage") !== -1) { // Fix an old typo
+                        newKey = key.replace("aussage", "ausage");
+                    }
+                    this[newKey] = parsed[key];
                 }
             }
         },
@@ -1618,7 +1644,8 @@
                 <div class="slider">
                     <div>Minimum number of ingredients (will not always work!): {{ minIngredients }}</div>
                     <div class="slider-range"><input type="range" v-model.number="minIngredients" step="1" min="1" max="30" /></div>
-                    <div><input type="checkbox" v-model="moreDiverse" id="pizza_md" /><label for="pizza_md">Try to make a more diverse pizza (to avoid repeating ingredient types). This currently uses randomness, so click 'Make a pizza' again until you are satisfied (and try changing the minimum/maximum settings of ingredients).</label></div>
+                    <div><input type="checkbox" v-model="moreDiverse" id="pizza_md" /><label for="pizza_md">Try to make a more diverse pizza (to avoid repeating ingredient types). This uses randomness, so click 'Make a pizza' again until you are satisfied (and try changing the minimum/maximum settings of ingredients).</label></div>
+                    <div><input type="checkbox" v-model="evenMoreDiverse" id="pizza_emd" /><label for="pizza_emd">Randomize pizza even more (shuffles the ingredient categories).</label></div>
                 </div>
                 <div class="ingredient-category">
                     <div class="ingcat-header">
@@ -1633,11 +1660,11 @@
                 </div>
                 <div class="ingredient-category">
                     <div class="ingcat-header">
-                        <h3 v-on:click="toggle('saussageExtended')">Saussages</h3>
-                        Minimum: <input type="number" min="0" v-model.number="minSaussages"/> | Maximum: <input type="number" min="0" v-model.number="maxSaussages"/>
+                        <h3 v-on:click="toggle('sausageExtended')">Sausages</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minSausages"/> | Maximum: <input type="number" min="0" v-model.number="maxSausages"/>
                     </div>
-                    <div class="ingcat-body" v-show="saussageExtended">
-                        Select desired meat types for saussages: <br />
+                    <div class="ingcat-body" v-show="sausageExtended">
+                        Select desired meat types for sausages: <br />
                         <div v-for="(value, name) in meatTypes" class="meat-select">
                             <input type="checkbox" v-model="selectedMeatTypes" :value="name" :id="'pizzaMeat_'+name" /><label :for="'pizzaMeat_'+name">{{ value }}</label>
                         </div>
@@ -1661,7 +1688,11 @@
                         Minimum: <input type="number" min="0" v-model.number="minMeat"/> | Maximum: <input type="number" min="0" v-model.number="maxMeat"/>
                     </div>
                     <div class="ingcat-body" v-show="meatExtended">
-                        Meat types are the same as selected under "Saussages". Select desired modifiers: <br />
+                        Select desired meat types: <br />
+                        <div v-for="(value, name) in meatTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedRawMeatTypes" :value="name" :id="'pizzaRawMeat_'+name" /><label :for="'pizzaRawMeat_'+name">{{ value }}</label>
+                        </div> <br />
+                        Select desired modifiers: <br />
                         <div v-for="(value, name) in meatModifierTypes" class="meat-select">
                             <input type="checkbox" v-model="selectedMeatModifierTypes" :value="name" :id="'pizzaMeatMod_'+name" /><label :for="'pizzaMeatMod_'+name">{{ value }}</label>
                         </div>
@@ -1767,7 +1798,7 @@
                 </div>
                 <div>
                     <div v-for="result in results" v-bind:key="result.key" class="pizza-result">
-                        <div class="pizza-label">{{ result.label }} <br /> <button v-on:click="removePizza(result.key)">Remove</button></div>
+                        <div class="pizza-label">{{ result.label }} <br /> <button v-on:click="removePizza(result.key)">Remove</button> <br /> {{ result.affinities }}</div>
                         <ingredient-display v-bind:ingredients="result.ingredients"></ingredient-display>
                     </div>
                 </div>

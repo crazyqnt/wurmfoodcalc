@@ -1401,6 +1401,10 @@
                 'selectedBaconModifierTypes': [... allBaconModifiers],
                 'baconExtended': false,
 
+                'minHaggis': 0,
+                'maxHaggis': 1,
+                'haggisExtended': false,
+
                 'herbTypes': herbTypes,
                 'selectedHerbTypes': [... allHerbs],
                 'minHerbs': 0,
@@ -1487,6 +1491,13 @@
                         'generator': new GenericIngredientModifierGenerator([104], Array.from(this.selectedBaconModifierTypes)),
                         min: this.minBacon,
                         max: this.maxBacon
+                    });
+                }
+                if (this.maxHaggis >= this.minHaggis && this.maxHaggis > 0) {
+                    ingrs.push({
+                        'generator': new GenericIngredientModifierGenerator([106], [1]),
+                        min: this.minHaggis,
+                        max: this.maxHaggis
                     });
                 }
                 if (this.maxHerbs >= this.minHerbs && this.maxHerbs > 0) {
@@ -1737,6 +1748,15 @@
                         <div v-for="(value, name) in baconModifierTypes" class="meat-select">
                             <input type="checkbox" v-model="selectedBaconModifierTypes" :value="name" :id="'pizzaBaconMod_'+name" /><label :for="'pizzaBaconMod_'+name">{{ value }}</label>
                         </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('haggisExtended')">Haggis</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minHaggis"/> | Maximum: <input type="number" min="0" v-model.number="maxHaggis"/>
+                    </div>
+                    <div class="ingcat-body" v-show="haggisExtended">
+                        No modifiers for haggis.
                     </div>
                 </div>
                 <div class="ingredient-category">

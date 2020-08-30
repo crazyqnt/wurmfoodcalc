@@ -1438,7 +1438,7 @@
                 'label': '',
 
                 'showSaveMessage': false,
-                'resultError': false,
+                'resultError': "",
                 'results': []
             };
         },
@@ -1531,6 +1531,10 @@
 
                 let startValue;
                 if (this.pizzaMode) {
+                    if (!hasSavedDefaultMeal()) {
+                        this.resultError = "No saved default meal";
+                        return;
+                    }
                     let mealIngredients = JSON.parse(localStorage.meal_ingredients);
                     let mealCooker = JSON.parse(localStorage.meal_cooker);
                     let mealCookerRarity = JSON.parse(localStorage.meal_cookerRarity);
@@ -1578,9 +1582,9 @@
                         'affinities': affinities,
                         'key': uuidv4()
                     });
-                    this.resultError = false;
+                    this.resultError = "";
                 } else {
-                    this.resultError = true;
+                    this.resultError = "Could not find a recipe";
                 }
             }, desiredSkillUpdate(value) {
                 this.targetSkill = value;
@@ -1814,7 +1818,7 @@
                 <button v-on:click="calculate()">Make a pizza 🍕</button> <button v-on:click="saveToBrowser()">Save pizza settings</button> <div class="save-feedback" v-if="showSaveMessage">Saved!</div>
 
                 <div class="skill-error" v-if="resultError">
-                    Could not find a recipe
+                    {{ resultError }}
                 </div>
                 <div>
                     <div v-for="result in results" v-bind:key="result.key" class="pizza-result">

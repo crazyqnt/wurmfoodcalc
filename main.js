@@ -15,6 +15,10 @@
     let skillData = {"109": "Aggressive Fighting", "25": "Alchemy", "130": "Animal Husbandry", "129": "Animal Taming", "120": "Archaeology", "16": "Archery", "22": "Armour Smithing", "11": "Axes", "62": "Baking", "135": "Ballistae", "63": "Beverages", "59": "Blacksmithing", "54": "Blades Smithing", "1": "Body", "3": "Body Control", "4": "Body Stamina", "5": "Body Strength", "122": "Botanizing", "103": "Bowyery", "77": "Butchering", "73": "Butchering Knife", "78": "Carpentry", "72": "Carving Knife", "128": "Catapults", "56": "Chain Armour Smithing", "118": "Channeling", "123": "Climbing", "52": "Cloth Tailoring", "14": "Clubs", "97": "Coal-Making", "19": "Cooking", "60": "Dairy Food Making", "110": "Defensive Fighting", "44": "Digging", "119": "Exorcism", "33": "Farming", "28": "Fighting", "102": "Fine Carpentry", "79": "Firemaking", "112": "First Aid", "94": "Fishing", "104": "Fletching", "121": "Foraging", "38": "Forestry", "36": "Gardening", "70": "Halberd", "91": "Hammer", "15": "Hammers", "50": "Hatchet", "29": "Healing", "61": "Hot Food Cooking", "88": "Huge Axe", "75": "Huge Club", "101": "Jewelry Smithing", "12": "Knives", "87": "Large Axe", "65": "Large Maul", "85": "Large Metal Shield", "83": "Large Wooden Shield", "51": "Leather working", "125": "Lock Picking", "95": "Locksmithing", "132": "Long Bow", "69": "Long Spear", "64": "Longsword", "53": "Masonry", "13": "Mauls", "37": "Meditating", "133": "Medium Bow", "66": "Medium Maul", "86": "Medium Metal Shield", "82": "Medium Wooden Shield", "99": "Metallurgy", "115": "Milking", "98": "Milling", "0": "Mind", "6": "Mind Logic", "7": "Mind Speed", "43": "Mining", "23": "Misc Items", "100": "Natural Substances", "26": "Nature", "111": "Normal Fighting", "34": "Papyrusmaking", "92": "Paving", "45": "Pick axe", "57": "Plate Armour Smithing", "17": "Polearms", "47": "Pottery", "117": "Praying", "116": "Preaching", "93": "Prospecting", "106": "Puppeteering", "39": "Rake", "30": "Religion", "96": "Repairing", "137": "Restoration", "48": "Ropemaking", "76": "Saw", "40": "Scythe", "114": "Shield Bashing", "58": "Shield Smithing", "24": "Shields", "134": "Ship Building", "131": "Short Bow", "89": "Shortsword", "46": "Shovel", "41": "Sickle", "42": "Small Axe", "67": "Small Maul", "84": "Small Metal Shield", "81": "Small Wooden Shield", "20": "Smithing", "2": "Soul", "8": "Soul Depth", "9": "Soul Strength", "71": "Staff", "126": "Stealing", "74": "Stone Chisel", "124": "Stone Cutting", "10": "Swords", "18": "Tailoring", "113": "Taunting", "35": "Thatching", "31": "Thievery", "107": "Toy Making", "27": "Toys", "80": "Tracking", "127": "Traps", "136": "Trebuchets", "90": "Two Handed Sword", "32": "War Machines", "68": "Warhammer", "55": "Weapon Heads Smithing", "21": "Weapon Smithing", "108": "Weaponless Fighting", "49": "Woodcutting", "105": "Yoyo"};
 
     let modulus = Object.keys(skillData).length; // should be 138
+    if (modulus !== 138) {
+        alert("Modulus needs to be adjusted. Website will not work.");
+        return;
+    }
 
     //
     // GENERATOR
@@ -146,7 +150,20 @@
         }
     };
 
-    function bfs(multiGraph, start, randomizeEdges = false) {
+    function isZeroIngredient(meta) {
+        return meta.ingredient === null;
+    }
+
+    function edgeMetaEquals(metaA, metaB) {
+        if (metaA.ingredient == null || metaB.ingredient == null) { // yes in this case if both are null they are still not considered equal, makes sense here
+            return false;
+        }
+        return metaA.ingredient.ingredient == metaB.ingredient.ingredient &&
+            metaA.ingredient.rarity == metaB.ingredient.rarity &&
+            metaA.ingredient.modifier == metaB.ingredient.modifier;
+    }
+
+    function bfs(multiGraph, start, randomizeEdges = false, enforceDiverseEdges = false) {
         let backEdges = {};
         let visited = {};
         function idxToString(idx) {
@@ -173,6 +190,20 @@
                 shuffle(edges);
             }
             for (let edge of edges) {
+                if (enforceDiverseEdges && !isZeroIngredient(edge.meta)) {
+                    let curidx = idxToString(id);
+                    let ignoreEdge = false;
+                    while (backEdges[curidx]) {
+                        if (edgeMetaEquals(edge.meta, backEdges[curidx].edge.meta)) {
+                            ignoreEdge = true;
+                            break;
+                        }
+                        curidx = backEdges[curidx].parent;
+                    }
+                    if (ignoreEdge) {
+                        continue;
+                    }
+                }
                 if (!visited[idxToString(edge.to)]) {
                     q.append(edge.to);
                     visited[idxToString(edge.to)] = true;
@@ -469,9 +500,202 @@
         return value;
     }
 
+    //
+    // WASM Support
+
+    // Ingredient seriazlizazion:
+    // 4 lower bits: rarity info
+    // next 14 bits: modifier info
+    // highest 14 bits: ingredient info
+    function serizalizeIngredient(ingredient) {
+        return (ingredient.ingredient << 18) | (ingredient.modifier << 4) | ingredient.rarity;
+    }
+
+    function deserializeIngredient(num) {
+        return {
+            'ingredient': (num >> 18),
+            'modifier': (num >> 4) & 0x3FFF,
+            'rarity': num & 0xF
+        };
+    }
+
+    class WasmWrapper {
+        constructor(instance) {
+            for (let key in instance.exports) {
+                if (key.indexOf("start") !== -1) {
+                    this.start = instance.exports[key];
+                } else if (key.indexOf("add_graph") !== -1) {
+                    this.addGraph = instance.exports[key];
+                } else if (key.indexOf("mark_present") !== -1) {
+                    this.markPresent = instance.exports[key];
+                } else if (key.indexOf("set_goal_node") !== -1) {
+                    this.setGoalNode = instance.exports[key];
+                } else if (key.indexOf("add_edge") !== -1) {
+                    this.addEdge = instance.exports[key];
+                } else if (key.indexOf("bfs") !== -1) {
+                    this.bfs = instance.exports[key];
+                } else if (key.indexOf("free_array") !== -1) {
+                    this.freeArray = instance.exports[key];
+                } else if (key.indexOf("list_nodes") !== -1) {
+                    this.listNodes = instance.exports[key];
+                } else if (key.indexOf("shuffle_all_edges") !== -1) {
+                    this.shuffleAllEdges = instance.exports[key];
+                }
+            }
+        }
+    }    
+
+    let wasmInstance = null;
+
+    let wasmImport = {
+        'wasi_snapshot_preview1': {
+            'proc_exit': function() {
+                console.log("WASM requested exit");
+            }
+        }
+    };
+
+    try {
+        WebAssembly.instantiateStreaming(fetch('multigraph.wasm'), wasmImport).then((res) => {
+            wasmInstance = res.instance;
+        }).catch((err) => {
+            console.log(err);
+        });
+    } catch (err) {
+        console.log(err); // just in case not even WebAssembly is defined
+    }
+
+    function findCombinationWASM(recipe, startValue, targetValue, randomOptions = null) {
+        let shuffleIngredients = (!!randomOptions) ? !!randomOptions.shuffleIngredients : false;
+        let shuffleEdges = (!!randomOptions) ? !!randomOptions.shuffleEdges : false;
+        let uniqueIngredients = (!!randomOptions) ? !!randomOptions.uniqueIngredients : false;
+
+        let wrapper = new WasmWrapper(wasmInstance);
+
+        // Create the graph!
+        wrapper.start(modulus);
+
+        let lastGraph = wrapper.addGraph();
+        let startGraph = lastGraph;
+        wrapper.markPresent(lastGraph, startValue); // 'create' start node
+
+        for (let component of recipe) {
+            component._generated = component.generator.generateAll();
+        }
+
+        function addNextNodes(lastGraph, nextGraph, ingredients, optional=false) { // lastGraph can also be equal to nextGraph
+            let arrayRef = wrapper.listNodes(lastGraph);
+            let jsArray = new Uint32Array(wasmInstance.exports.memory.buffer, arrayRef);
+
+            for (let i = 0; i < jsArray[0]; i++) { // For each current node ...
+                let node = jsArray[1 + i];
+
+                for (let ingr of ingredients) { // ... go to new node by adding each ingredient
+                    let newNode = (node + ingredientValue(ingr)) % modulus;
+
+                    wrapper.markPresent(nextGraph, newNode);
+                    wrapper.addEdge(lastGraph, node, nextGraph, newNode, serizalizeIngredient(ingr));
+                }
+
+                if (optional) { // add 'do nothing' edge
+                    let newNode = node;
+                    wrapper.markPresent(nextGraph, newNode);
+                    wrapper.addEdge(lastGraph, node, nextGraph, newNode, 0);
+                }
+            }
+
+            wrapper.freeArray(arrayRef);
+        }
+
+        // Handle all required components
+        for (let component of recipe) {
+            if (component.required === true || typeof component.min === "number") { // Required
+                let times = 1; // How many times required?
+                if (typeof component.min === "number") {
+                    times = component.min;
+                }
+                for (let i = 0; i < times; i++) {
+                    let nextGraph = wrapper.addGraph(); // For each required build new graph
+                    addNextNodes(lastGraph, nextGraph, component._generated);
+                    lastGraph = nextGraph;
+                }
+            }
+        }
+
+        function markEndNode(innerGraph) {
+            wrapper.setGoalNode(innerGraph, targetValue);
+        }
+
+        markEndNode(lastGraph);
+
+        if (shuffleIngredients) {
+            shuffle(recipe);
+        }
+
+        // Handle all optional but maximum amount components
+        for (let component of recipe) {
+            if (typeof component.max === "number") {
+                let times = component.max;
+                if (typeof component.min === "number") {
+                    times -= component.min;
+                }
+
+                for (let i = 0; i < times; i++) {
+                    let nextGraph = wrapper.addGraph(); // For each optional build new graph
+                    addNextNodes(lastGraph, nextGraph, component._generated, true);
+                    lastGraph = nextGraph;
+                    markEndNode(lastGraph);
+                }
+            }
+        }
+
+        // Create all nodes with all values, even if unreachable
+        // This will ensure that all combinations are available
+        for (let i = 0; i < modulus; i++) {
+            wrapper.markPresent(lastGraph, i);
+        }
+
+        // Handle all infinite components
+        for (let component of recipe) {
+            if (!component.required && typeof component.max === "undefined" && typeof component.max === "undefined") {
+                addNextNodes(lastGraph, lastGraph, component._generated);
+            }
+        }
+
+        // Graph should be done
+        if (shuffleEdges) {
+            wrapper.shuffleAllEdges((Math.random() * 1000000) | 0); // should be random enough, eh
+        }
+        let arrayRef = wrapper.bfs(startGraph, startValue, uniqueIngredients ? 1 : 0);
+        let jsArray = new Uint32Array(wasmInstance.exports.memory.buffer, arrayRef);
+        let final = [];
+        let pos = 2;
+        for (let i = 0; i < jsArray[1]; i++) {
+            let len = jsArray[pos];
+
+            let newTrace = [];
+            for (let j = 0; j < len; j++) {
+                let meta = jsArray[pos + 1 + j];
+                if (meta != 0) {
+                    newTrace.push(deserializeIngredient(meta));
+                }
+            }
+            final.push(newTrace);
+
+            pos += len + 1;
+        }
+        wrapper.freeArray(arrayRef);
+        return final;
+    }
+
+
+    //
+    // REGULAR JS IMPLEMENTATION
+
     function findCombination(recipe, startValue, targetValue, randomOptions = null) {
         let shuffleIngredients = (!!randomOptions) ? !!randomOptions.shuffleIngredients : false;
         let shuffleEdges = (!!randomOptions) ? !!randomOptions.shuffleEdges : false;
+        let uniqueIngredients = (!!randomOptions) ? !!randomOptions.uniqueIngredients : false;
 
         // Create the graph!
         let graph = new MultiGraph();
@@ -566,12 +790,12 @@
         for (let component of recipe) {
             if (!component.required && typeof component.max === "undefined" && typeof component.max === "undefined") {
                 addNextNodes(lastGraph, lastGraph, component._generated);
-                markEndNode(lastGraph); // just in cased the node was only just added. can be called multiple times
+                markEndNode(lastGraph); // just in case the node was only just added. can be called multiple times
             }
         }
 
         // Graph should be done
-        let result = bfs(graph, startNodeId, shuffleEdges);
+        let result = bfs(graph, startNodeId, shuffleEdges, uniqueIngredients);
         let final = [];
         for (let trace of result) {
             let newTrace = [];
@@ -980,7 +1204,12 @@
     });
 
     Vue.component('skill-selector', {
-        data: function() {
+        props: ['skillexternal'],
+        watch: {
+            skillexternal: function(newVal) {
+                this.skill = newVal;
+            }
+        }, data: function() {
             return {
                 'skill': 109
             };
@@ -1432,9 +1661,11 @@
                 'minIngredients': 5,
                 'targetSkill': 109,
                 'tastedSkill': 109,
+                'cookTastedSkill': 109,
                 'ovenRarity': 0,
                 'moreDiverse': true,
                 'evenMoreDiverse': false,
+                'uniqueIngredients': false,
                 'label': '',
 
                 'showSaveMessage': false,
@@ -1530,6 +1761,8 @@
                 }
 
                 let startValue;
+                let cookStartValue = null;
+                let setupAdds = rarityData[this.ovenRarity] + 40 /* Oven */ + 63 /* Baking stone */;
                 if (this.pizzaMode) {
                     if (!hasSavedDefaultMeal()) {
                         this.resultError = "No saved default meal";
@@ -1544,19 +1777,39 @@
                         mealValue += ingredientValue(ingredient);
                     }
                     mealValue %= modulus;
-                    startValue = this.tastedSkill - mealValue + rarityData[this.ovenRarity] + 40 /* Oven */ + 63 /* Baking stone */;
+                    startValue = this.tastedSkill - mealValue + setupAdds;
+                    cookStartValue = this.cookTastedSkill - mealValue + setupAdds;
                     while (startValue < 0) {
                         startValue += modulus;
                     }
+                    while (cookStartValue < 0) {
+                        cookStartValue += modulus;
+                    }
                     startValue %= modulus;
+                    cookStartValue %= modulus;
                 } else {
-                    startValue = (this.offset + rarityData[this.ovenRarity] + 40 /* Oven */ + 63 /* Baking stone */) % modulus;
+                    startValue = (this.offset + setupAdds) % modulus;
                 }
 
-                result = findCombination(ingrs, startValue, this.targetSkill, {
-                    'shuffleEdges': this.moreDiverse,
-                    'shuffleIngredients': this.evenMoreDiverse
-                });
+                let result = null;
+                if (wasmInstance != null) {
+                    try {
+                        result = findCombinationWASM(ingrs, startValue, this.targetSkill, {
+                            'shuffleEdges': this.moreDiverse,
+                            'shuffleIngredients': this.evenMoreDiverse,
+                            'uniqueIngredients': this.uniqueIngredients
+                        });
+                    } catch (ex) {
+                        // Hm :/
+                    }
+                }
+                if (result === null) {
+                    result = findCombination(ingrs, startValue, this.targetSkill, {
+                        'shuffleEdges': this.moreDiverse,
+                        'shuffleIngredients': this.evenMoreDiverse,
+                        'uniqueIngredients': this.uniqueIngredients
+                    });
+                }
                 
                 if (result.length > 0) {
                     let best = 0;
@@ -1576,6 +1829,28 @@
                     } else {
                         affinities = skillData[this.targetSkill];
                     }
+                    
+                    let cookAdded = false;
+                    for (let res of result) {
+                        let value = startValue;
+                        let cookValue = (cookStartValue != null) ? cookStartValue : 0;
+                        for (let ingr of res) {
+                            value += ingredientValue(ingr);
+                            cookValue += ingredientValue(ingr);
+                        }
+                        value %= modulus;
+                        if (value != this.targetSkill) {
+                            console.log(res);
+                            console.log(value);
+                            console.log(res);
+                            this.resultError = "Something went wrong... the pizza should be "+this.targetSkill+" but is "+value;
+                            return;
+                        }
+                        if (cookStartValue != null && !cookAdded) {
+                            affinities += " (Cook: " + skillData[cookValue % modulus]+")";
+                            cookAdded = true;
+                        }
+                    }
                     this.results.unshift({
                         'ingredients': result[best],
                         'label': label,
@@ -1590,10 +1865,12 @@
                 this.targetSkill = value;
             }, tastedSkillUpdate(value) {
                 this.tastedSkill = value;
-            }, toggle(prop) {
+            }, cookSkillUpdate(value) {
+                this.cookTastedSkill = value;
+            },  toggle(prop) {
                 this[prop] = !this[prop];
             }, saveToBrowser() {
-                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|ovenRarity|(even)?[mM]oreDiverse)$/;
+                let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|cookTastedSkill|ovenRarity|(even)?[mM]oreDiverse|uniqueIngredients)$/;
                 let saveData = {};
                 for (let key in this) {
                     if (key.match(saveRegex) != null) {
@@ -1646,7 +1923,10 @@
                     <div class="skill-error" v-if="!hasDefaultMeal">
                         There is currently no saved default meal!
                     </div>
-                </div>
+                    Optional: what you (the cook) tasted on the default meal:
+                    <skill-selector v-on:skill-update="cookSkillUpdate($event)" v-bind:skillexternal="cookTastedSkill"></skill-selector>
+                    If you don't change this, ignore the cook affinity displayed on finished pizzas.
+                </div>  <br />
                 Desired affinity for pizza: <skill-selector v-on:skill-update="desiredSkillUpdate($event)"></skill-selector>
                 You oven has rarity:
                 <select v-model.number="ovenRarity">
@@ -1659,8 +1939,9 @@
                 <div class="slider">
                     <div>Minimum number of ingredients (will not always work!): {{ minIngredients }}</div>
                     <div class="slider-range"><input type="range" v-model.number="minIngredients" step="1" min="1" max="30" /></div>
-                    <div><input type="checkbox" v-model="moreDiverse" id="pizza_md" /><label for="pizza_md">Try to make a more diverse pizza (to avoid repeating ingredient types). This uses randomness, so click 'Make a pizza' again until you are satisfied (and try changing the minimum/maximum settings of ingredients).</label></div>
+                    <div><input type="checkbox" v-model="moreDiverse" id="pizza_md" /><label for="pizza_md">Try to make a more diverse pizza. This uses randomness, so click 'Make a pizza' again until you are satisfied (and try changing the minimum/maximum settings of ingredients).</label></div>
                     <div><input type="checkbox" v-model="evenMoreDiverse" id="pizza_emd" /><label for="pizza_emd">Randomize pizza even more (shuffles the ingredient categories).</label></div>
+                    <div><input type="checkbox" v-model="uniqueIngredients" id="pizza_ui" /><label for="pizza_ui">Use each unique ingredient only once (<b>Warning:</b> Can lead to pizzas not being generated)</label></div>
                 </div>
                 <div class="ingredient-category">
                     <div class="ingcat-header">

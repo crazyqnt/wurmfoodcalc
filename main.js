@@ -238,231 +238,16 @@
         }
     };
 
-    class DoughGenerater extends IngredientGenerator {
-        constructor(doughTypes) {
-            super();
-            if (doughTypes) {
-                this.doughTypes = arrayParseStrings(doughTypes);
-            } else {
-                this.doughTypes = [];
-                for (let i = 9; i <= 12; i++) {
-                    this.doughTypes.push(i);
-                }
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let i of this.doughTypes) {
-                ret.push({
-                    ingredient: 103,
-                    modifier: i,
-                    rarity: 0
-                });
-            }
-            return ret;
-        }
-    };
-
-    class PassataGenerator extends IngredientGenerator {
-        generateAll() {
-            return [{
-                ingredient: 102,
-                modifier: 1,
-                rarity: 0
-            }];
-        }
-    };
-
-    class SausageGenerator extends IngredientGenerator {
-        constructor(meatTypes) {
-            super();
-            if (meatTypes) {
-                this.meatTypes = arrayParseStrings(meatTypes);
-            } else {
-                this.meatTypes = [];
-                // TODO: pastry?
-                for (let i = 1; i <= 16; i++) {
-                    this.meatTypes.push(i);
-                }
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let type of this.meatTypes) {
-                ret.push({
-                    ingredient: type,
-                    modifier: 13,
-                    rarity: 0
-                });
-            }
-            return ret;
-        }
-    };
-
+    let allMeatTypes = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16];
     let allMeatModifiers = [1, 2, 3, 4, 5];
 
-    class MeatGenerator extends IngredientGenerator {
-        constructor(meatTypes, modifierTypes) {
-            super();
-            if (meatTypes) {
-                this.meatTypes = arrayParseStrings(meatTypes);
-            } else {
-                this.meatTypes = [];
-                // TODO: pastry?
-                for (let i = 1; i <= 16; i++) {
-                    this.meatTypes.push(i);
-                }
-            }
-            if (modifierTypes) {
-                this.modifierTypes = arrayParseStrings(modifierTypes);
-            } else {
-                this.modifierTypes = [...allMeatModifiers];
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let type of this.meatTypes) {
-                for (let modifier of this.modifierTypes) {
-                    ret.push({
-                        ingredient: type,
-                        modifier: modifier,
-                        rarity: 0
-                    });
-                }
-            }
-            return ret;
-        }
-    };
-
-    class CheeseGenerator extends IngredientGenerator {
-        constructor(cheeseTypes) {
-            super();
-            if (cheeseTypes) {
-                this.cheeseTypes = arrayParseStrings(cheeseTypes);
-            } else {
-                this.cheeseTypes = [];
-                for (let i = 25; i <= 28; i++) {
-                    this.cheeseTypes.push(i);
-                }
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let type of this.cheeseTypes) {
-                ret.push({
-                    ingredient: type,
-                    modifier: 1,
-                    rarity: 0
-                });
-            }
-            return ret;
-        }
-    };
-
-    
     let allHerbs = [44, 46, 65, 41, 38, 64, 50, 42, 43, 48, 39, 51, 45];
-
-    class ChoppedHerbGenerator extends IngredientGenerator {
-        constructor(herbTypes) {
-            super();
-            if (herbTypes) {
-                this.herbTypes = arrayParseStrings(herbTypes);
-            } else {
-                this.herbTypes = [...allHerbs];
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let herb of this.herbTypes) {
-                ret.push({
-                    ingredient: herb,
-                    modifier: 6,
-                    rarity: 0
-                });
-            }
-            return ret;
-        }
-    };
 
     let allVeggies = [67, 66, 22, 83, 69, 40, 77, 70, 24, 23, 61, 68];
 
-    class ChoppedVegetableGenerator extends IngredientGenerator {
-        constructor(veggieTypes) {
-            super();
-            if (veggieTypes) {
-                this.veggieTypes = arrayParseStrings(veggieTypes);
-            } else {
-                this.veggieTypes = [...allVeggies];
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let veggie of this.veggieTypes) {
-                ret.push({
-                    ingredient: veggie,
-                    modifier: 6,
-                    rarity: 0
-                });
-            }
-            return ret;
-        }
-    };
-
     let allSpices = [72, 73, 74, 75, 76, 78];
 
-    class GroundSpiceGenerator extends IngredientGenerator {
-        constructor(spiceTypes) {
-            super();
-            if (spiceTypes) {
-                this.spiceTypes = arrayParseStrings(spiceTypes);
-            } else {
-                this.spiceTypes = [...allSpices];
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let spice of this.spiceTypes) {
-                ret.push({
-                    ingredient: spice,
-                    modifier: 7,
-                    rarity: 0
-                });
-            }
-            return ret;
-        }
-    };
-
     let allNuts = [63, 30, 80, 62];
-
-    class NutsGenerator extends IngredientGenerator {
-        constructor(nutTypes) {
-            super();
-            if (nutTypes) {
-                this.nutTypes = arrayParseStrings(nutTypes);
-            } else {
-                this.nutTypes = [...allNuts];
-            }
-        }
-
-        generateAll() {
-            let ret = [];
-            for (let nut of this.nutTypes) {
-                ret.push({
-                    ingredient: nut,
-                    modifier: 1,
-                    rarity: 0
-                });
-            }
-            return ret;
-        }
-    };
 
     let allFish = [85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99];
     let allFishModifiers = [1, 3, 8, 190];
@@ -498,6 +283,67 @@
         value += modifierData[ingredient.modifier].value;
         value += rarityData[ingredient.rarity];
         return value;
+    }
+
+    // SORT
+    let pizzaGroups = {};
+    pizzaGroups['102+1'] = 0; // Passata
+    for (let i = 9; i <=12; i++) {
+        pizzaGroups['103+'+i] = 1; // Dough
+    }
+    for (let meatType of allMeatTypes) {
+        pizzaGroups[meatType+'+13'] = 2; // Sausage
+    }
+    for (let meatType of allMeatTypes) {
+        for (let meatModifier of allMeatModifiers) {
+            pizzaGroups[meatType+'+'+meatModifier] = 3; // Other meat
+        }
+    }
+    for (let meatType of allFish) {
+        for (let meatModifier of allFishModifiers) {
+            pizzaGroups[meatType+'+'+meatModifier] = 4; // Other fish
+        }
+    }
+    for (let cheese = 25; cheese <= 28; cheese++) {
+        pizzaGroups[cheese+'+1'] = 5; // Cheese
+    }
+    for (let modifier of allFriesModifiers) {
+        pizzaGroups['107+'+modifier] = 6; // Fries
+    }
+    for (let modifier of allBaconModifiers) {
+        pizzaGroups['104+'+modifier] = 7; // Bacon
+    }
+    pizzaGroups['106+1'] = 8; // Haggis
+    for (let veggie of allVeggies) {
+        pizzaGroups[veggie+'+6'] = 9; // Vegetable
+    }
+    for (let herb of allHerbs) {
+        pizzaGroups[herb+'+6'] = 10; // Herb
+    }
+    for (let spice of allSpices) {
+        pizzaGroups[spice+'+7'] = 11; // Spice
+    }
+    for (let nut of allNuts) {
+        pizzaGroups[nut+'+1'] = 12; // Nut
+    }
+
+    function pizzaSort(ingA, ingB) {
+        let ga = pizzaGroups[ingA.ingredient + '+' + ingA.modifier];
+        let gb = pizzaGroups[ingB.ingredient + '+' + ingB.modifier];
+        if (typeof ga !== "undefined" && typeof gb !== "undefined") {
+            if (ga < gb) {
+                return -1;
+            } else if (ga === gb) {
+                return ingredientData[ingA.ingredient].name.localeCompare(ingredientData[ingB.ingredient].name);
+            }
+            return 1;
+        } else if (typeof ga !== "undefined") {
+            return -1;
+        } else if (typeof gb !== "undefined") {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     //
@@ -1673,32 +1519,79 @@
                 'results': []
             };
         },
+        watch: {
+            minSausages: function(newVal, oldVal) {
+                if (newVal > this.maxSausages) {
+                    this.maxSausages = newVal;
+                }
+            }, minMeat: function(newVal, oldVal) {
+                if (newVal > this.maxMeat) {
+                    this.maxMeat = newVal;
+                }
+            }, minCheese: function(newVal, oldVal) {
+                if (newVal > this.maxCheese) {
+                    this.maxCheese = newVal;
+                }
+            }, minFish: function(newVal, oldVal) {
+                if (newVal > this.maxFish) {
+                    this.maxFish = newVal;
+                }
+            }, minFries: function(newVal, oldVal) {
+                if (newVal > this.maxFries) {
+                    this.maxFries = newVal;
+                }
+            }, minBacon: function(newVal, oldVal) {
+                if (newVal > this.maxBacon) {
+                    this.maxBacon = newVal;
+                }
+            }, minHaggis: function(newVal, oldVal) {
+                if (newVal > this.maxHaggis) {
+                    this.maxHaggis = newVal;
+                }
+            }, minHerbs: function(newVal, oldVal) {
+                if (newVal > this.maxHerbs) {
+                    this.maxHerbs = newVal;
+                }
+            }, minVegetables: function(newVal, oldVal) {
+                if (newVal > this.maxVegetables) {
+                    this.maxVegetables = newVal;
+                }
+            }, minSpices: function(newVal, oldVal) {
+                if (newVal > this.maxSpices) {
+                    this.maxSpices = newVal;
+                }
+            }, minNuts: function(newVal, oldVal) {
+                if (newVal > this.maxNuts) {
+                    this.maxNuts = newVal;
+                }
+            }
+        },
         methods: {
             calculate() {
                 let ingrs = [{
-                    'generator': new DoughGenerater(Array.from(this.selectedDoughTypes)),
+                    'generator': new GenericIngredientModifierGenerator([103], Array.from(this.selectedDoughTypes)),
                     required: true
                 }, {
-                    'generator': new PassataGenerator(),
+                    'generator': new GenericIngredientModifierGenerator([102], [1]),
                     required: true
                 }];
                 if (this.maxSausages >= this.minSausages && this.maxSausages > 0) {
                     ingrs.push({
-                        'generator': new SausageGenerator(Array.from(this.selectedMeatTypes)),
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedMeatTypes), [13]),
                         min: this.minSausages,
                         max: this.maxSausages
                     });
                 }
                 if (this.maxCheese >= this.minCheese && this.maxCheese > 0) {
                     ingrs.push({
-                        'generator': new CheeseGenerator(Array.from(this.selectedCheeseTypes)),
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedCheeseTypes), [1]),
                         min: this.minCheese,
                         max: this.maxCheese
                     });
                 }
                 if (this.maxMeat >= this.minMeat && this.maxMeat > 0) {
                     ingrs.push({
-                        'generator': new MeatGenerator(Array.from(this.selectedRawMeatTypes), Array.from(this.selectedMeatModifierTypes)),
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedRawMeatTypes), Array.from(this.selectedMeatModifierTypes)),
                         min: this.minMeat,
                         max: this.maxMeat
                     });
@@ -1731,30 +1624,30 @@
                         max: this.maxHaggis
                     });
                 }
-                if (this.maxHerbs >= this.minHerbs && this.maxHerbs > 0) {
-                    ingrs.push({
-                        'generator': new ChoppedHerbGenerator(Array.from(this.selectedHerbTypes)),
-                        min: this.minHerbs,
-                        max: this.maxHerbs
-                    });
-                }
                 if (this.maxVegetables >= this.minVegetables && this.maxVegetables > 0) {
                     ingrs.push({
-                        'generator': new ChoppedVegetableGenerator(Array.from(this.selectedVegetableTypes)),
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedVegetableTypes), [6]),
                         min: this.minVegetables,
                         max: this.maxVegetables
                     });
                 }
+                if (this.maxHerbs >= this.minHerbs && this.maxHerbs > 0) {
+                    ingrs.push({
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedHerbTypes), [6]),
+                        min: this.minHerbs,
+                        max: this.maxHerbs
+                    });
+                }
                 if (this.maxSpices >= this.minSpices && this.maxSpices > 0) {
                     ingrs.push({
-                        'generator': new GroundSpiceGenerator(Array.from(this.selectedSpiceTypes)),
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedSpiceTypes), [7]),
                         min: this.minSpices,
                         max: this.maxSpices
                     });
                 }
                 if (this.maxNuts >= this.minNuts && this.maxNuts > 0) {
                     ingrs.push({
-                        'generator': new NutsGenerator(Array.from(this.selectedNutTypes)),
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedNutTypes), [1]),
                         min: this.minNuts,
                         max: this.maxNuts
                     });
@@ -1851,6 +1744,7 @@
                             cookAdded = true;
                         }
                     }
+                    result[best].sort(pizzaSort);
                     this.results.unshift({
                         'ingredients': result[best],
                         'label': label,

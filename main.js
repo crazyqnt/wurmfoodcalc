@@ -663,6 +663,19 @@
             && typeof localStorage.meal_cookerRarity !== "undefined" && typeof localStorage.meal_cookerContainer !== "undefined";
     }
 
+    function downloadJSONFile(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+      
+        element.style.display = 'none';
+        document.body.appendChild(element);
+      
+        element.click();
+      
+        document.body.removeChild(element);
+    }
+
     // 
     // CODE
 
@@ -1518,7 +1531,13 @@
 
                 'showSaveMessage': false,
                 'resultError': "",
-                'results': []
+                'results': [],
+
+                "editProfileName": "",
+                "profiles": [],
+                "profileVisible": false,
+                "profileDropdown": "=none",
+                "profileMessage": ""
             };
         },
         watch: {
@@ -1765,9 +1784,9 @@
                 this.tastedSkill = value;
             }, cookSkillUpdate(value) {
                 this.cookTastedSkill = value;
-            },  toggle(prop) {
+            }, toggle(prop) {
                 this[prop] = !this[prop];
-            }, saveToBrowser() {
+            }, saveToString() {
                 let saveRegex = /^(min[A-Z]\w*|max[A-Z]\w*|selected[A-Z]\w*Types|cookTastedSkill|ovenRarity|(even)?[mM]oreDiverse|uniqueIngredients)$/;
                 let saveData = {};
                 for (let key in this) {
@@ -1775,7 +1794,21 @@
                         saveData[key] = this[key];
                     }
                 }
-                localStorage.pizzaData = JSON.stringify(saveData);
+                return JSON.stringify(saveData);
+            }, loadFromString(str) {
+                let parsed = JSON.parse(str);
+                if (!parsed['selectedRawMeatTypes']) {
+                    parsed['selectedRawMeatTypes'] = parsed['selectedMeatTypes'];
+                }
+                for (let key in parsed) {
+                    let newKey = key;
+                    if (key.indexOf("aussage") !== -1) { // Fix an old typo
+                        newKey = key.replace("aussage", "ausage");
+                    }
+                    this[newKey] = parsed[key];
+                }
+            }, saveToBrowser() {
+                localStorage.pizzaData = this.saveToString();
                 this.showSaveMessage = true;
                 setTimeout(() => {
                     this.showSaveMessage = false;
@@ -1787,20 +1820,65 @@
                         this.results.splice(i, 1);
                     }
                 }
+            }, saveProfile() {
+                if (this.editProfileName !== "") {
+                    localStorage.setItem("pizzaProfile§"+this.encodeProfileName(this.editProfileName), this.saveToString());
+                    let found = false;
+                    for (let i = 0; i < this.profiles.length; i++) {
+                        if (this.profiles[i] == this.editProfileName) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        this.profiles.push(this.editProfileName);
+                    }
+                    this.profileMessage = "Saved";
+                    setTimeout(() => {
+                        this.profileMessage = "";
+                    }, 2000);
+                }
+            }, loadProfile() {
+                if (this.profileDropdown !== "=none") {
+                    let profile = localStorage.getItem("pizzaProfile§"+this.profileDropdown);
+                    if (profile !== null) {
+                        this.loadFromString(profile);
+                        this.profileMessage = "Loaded";
+                        setTimeout(() => {
+                            this.profileMessage = "";
+                        }, 2000);
+                    }
+                }
+            }, deleteProfile() {
+                if (this.profileDropdown !== "=none") {
+                    let toDelete = this.decodeProfileName(this.profileDropdown);
+                    localStorage.removeItem("pizzaProfile§"+this.profileDropdown);
+                    for (let i = 0; i < this.profiles.length; i++) {
+                        if (this.profiles[i] === toDelete) {
+                            this.profiles.splice(i, 1);
+                            this.profileDropdown = "=none";
+                            this.profileMessage = "Deleted";
+                            setTimeout(() => {
+                                this.profileMessage = "";
+                            }, 2000);
+                            break;
+                        }
+                    }
+                }
+            }, encodeProfileName(str) {
+                return btoa(encodeURIComponent(str));
+            }, decodeProfileName(str) {
+                return decodeURIComponent(atob(str));
             }
         },
         mounted: function() {
             if (localStorage.pizzaData) {
-                let parsed = JSON.parse(localStorage.pizzaData);
-                if (!parsed['selectedRawMeatTypes']) {
-                    parsed['selectedRawMeatTypes'] = parsed['selectedMeatTypes'];
-                }
-                for (let key in parsed) {
-                    let newKey = key;
-                    if (key.indexOf("aussage") !== -1) { // Fix an old typo
-                        newKey = key.replace("aussage", "ausage");
-                    }
-                    this[newKey] = parsed[key];
+                this.loadFromString(localStorage.pizzaData);   
+            }
+            for (let key of Object.keys(localStorage)) {
+                if (key.startsWith("pizzaProfile§")) {
+                    let profile = key.substr(13);
+                    this.profiles.push(this.decodeProfileName(profile));
                 }
             }
         },
@@ -1995,7 +2073,6 @@
                 </div>
                 <br />
                 <button v-on:click="calculate()">Make a pizza 🍕</button> <button v-on:click="saveToBrowser()">Save pizza settings</button> <div class="save-feedback" v-if="showSaveMessage">Saved!</div>
-
                 <div class="skill-error" v-if="resultError">
                     {{ resultError }}
                 </div>
@@ -2003,6 +2080,24 @@
                     <div v-for="result in results" v-bind:key="result.key" class="pizza-result">
                         <div class="pizza-label">{{ result.label }} <br /> <button v-on:click="removePizza(result.key)">Remove</button> <br /> {{ result.affinities }} <br /> {{ result.cookInfo}}</div>
                         <ingredient-display v-bind:ingredients="result.ingredients"></ingredient-display>
+                    </div>
+                </div>
+
+                <div class="profile-settings">
+                    <div class="profile-header" v-on:click="profileVisible = !profileVisible">Profiles</div>
+                    <div class="profile-body" v-show="profileVisible">
+                        Profiles allow you to use multiple configurations for pizza generation and save them. <br />
+                        Profile name: <input type="text" v-model="editProfileName" placeholder="Profile name..." /> <button v-on:click="saveProfile()">Save profile</button> {{ profileMessage }}<br />
+                        Saved profiles:
+                        <select v-model="profileDropdown">
+                            <option value="=none">---Select a profile---</option>
+                            <option v-for="profile in profiles" v-bind:value="encodeProfileName(profile)">{{ profile }}</option>
+                        </select>
+                        <button v-on:click="loadProfile()">Load selected profile</button>
+                        <button v-on:click="deleteProfile()">Delete selected profile</button> <br /> <br />
+                        Enter profile name and click save to create a new profile. Select a saved profile from the dropdown and load or delete it.
+                        <b>Note:</b> when you first load the page, the default profile is loaded. This default profile is saved when using the "Save pizza settings" button.
+                        When you reload the page you need to load a profile, otherwise you will use the default settings/profile.
                     </div>
                 </div>
             </div>
@@ -2016,11 +2111,52 @@
             offsetFinder: false,
             mealMaker: false,
             pizzaGenerator: false,
-            pizzaMode: true
+            pizzaMode: true,
+            importExport: false
         },
         methods: {
             setOffset(offset) {
                 this.offset = offset;
+            }, downloadLocalStorage() {
+                let data = {};
+                data.type = "localStorageBackup";
+                data.data = {};
+                for (let key of Object.keys(localStorage)) {
+                    data.data[key] = localStorage[key];
+                }
+                downloadJSONFile("wurmfoodcalc.json", JSON.stringify(data));
+            }, loadLocalStorage() {
+                let fileSelect = document.querySelector("#importFileSelector");
+                let files = fileSelect.files;
+                for (let i = 0; i < files.length; i++) {
+                    let file = files[i];
+                    if (file.size < 2 * 1024 * 1024 && file.name.endsWith(".json")) {
+                        let reader = new FileReader();
+                        reader.onload = (evt) => {
+                            let data = evt.target.result;
+                            try {
+                                loaded = JSON.parse(data);
+                                if (loaded.type === "localStorageBackup") {
+                                    let currentKeySet = new Set();
+                                    for (let key of Object.keys(localStorage)) {
+                                        currentKeySet.add(key);
+                                    }
+                                    for (let key of Object.keys(loaded.data)) {
+                                        localStorage[key] = loaded.data[key];
+                                        currentKeySet.delete(key);
+                                    }
+                                    for (let key of currentKeySet) {
+                                        localStorage.removeItem(key);
+                                    }
+                                    location.reload();
+                                }
+                            } catch (ex) {
+                            }
+                        };
+                        reader.readAsText(file);
+                        break;
+                    }
+                }
             }
         }
     });

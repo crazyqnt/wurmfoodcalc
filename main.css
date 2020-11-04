@@ -38,7 +38,7 @@ section {
     width: 100%;
 }
 
-.section-header {
+.section-header, .profile-header  {
     font-size: 1.5em;
     padding-left: var(--main-padding);
     padding-top: 5px;
@@ -46,6 +46,22 @@ section {
     cursor: pointer;
     background-color: #444444;
     color: white;
+}
+.profile-settings {
+    margin-top: 13px;
+}
+
+.profile-header {
+    font-size: 1.1em !important;
+}
+
+.profile-body {
+    padding: var(--main-padding);
+    background-color: #D2D2D2;
+}
+
+.importExportSection {
+    margin-top: 20px;
 }
 
 .section-body {

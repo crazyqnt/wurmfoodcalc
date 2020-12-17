@@ -1273,6 +1273,11 @@
                     <div class="offset-result">Your offset: {{ offset }} </div>
                     <button v-on:click="setOffset()">Apply</button>
                 </div>
+                <div class="explain">
+                    Please make sure that the recipe you entered above is a valid recipe. <br />
+                    Also: the "new player (newbie) bowl" that you get at the start of the game can create some otherwise invalid recipes.
+                    Be aware of this and use player crafted pottery bowls.
+                </div>
             </div>
         `
     });

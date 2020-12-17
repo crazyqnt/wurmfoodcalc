@@ -134,6 +134,7 @@ section {
 
 .slider {
     background-color: #AAC;
+    padding: 5px;
 }
 
 .slider-range > input {

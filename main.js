@@ -663,6 +663,19 @@
             && typeof localStorage.meal_cookerRarity !== "undefined" && typeof localStorage.meal_cookerContainer !== "undefined";
     }
 
+    function calculateDefaultMealValue() {
+        let mealIngredients = JSON.parse(localStorage.meal_ingredients);
+        let mealCooker = JSON.parse(localStorage.meal_cooker);
+        let mealCookerRarity = JSON.parse(localStorage.meal_cookerRarity);
+        let mealCookerContainer = JSON.parse(localStorage.meal_cookerContainer);
+        let mealValue = cookerData[mealCooker] + rarityData[mealCookerRarity] + containerData[mealCookerContainer];
+        for (let ingredient of mealIngredients) {
+            mealValue += ingredientValue(ingredient);
+        }
+        mealValue %= modulus;
+        return mealValue;
+    }
+
     function downloadJSONFile(filename, text) {
         var element = document.createElement('a');
         element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
@@ -1401,6 +1414,60 @@
         `
     });
 
+    Vue.component('player-list', {
+        data: function() {
+            return {
+                'players': [],
+                'playerName': '',
+                'tastedSkill': 109
+            };
+        },
+        methods: {
+            save: function() {
+                localStorage.playerList = JSON.stringify(this.players);
+            },
+            addPlayer: function() {
+                for (let i = 0; i < this.players.length; i++) {
+                    if (this.players[i][0] == this.playerName) {
+                        return;
+                    }
+                }
+                this.players.push([
+                    this.playerName, this.tastedSkill
+                ]);
+                this.save();
+            }, removePlayer: function(player) {
+                for (let i = 0; i < this.players.length; i++) {
+                    if (this.players[i][0] == player) {
+                        this.players.splice(i, 1);
+                        this.save();
+                        return;
+                    }
+                }
+            }, tastedSkillUpdate: function(skill) {
+                this.tastedSkill = skill;
+            }
+        }, mounted: function() {
+            if (localStorage.playerList) {
+                this.players = JSON.parse(localStorage.playerList);
+            }
+        }, computed: {
+            skillData: function() {
+                return skillData;
+            }
+        },
+        template: `
+            <div>
+                <div class="player" v-for="player in players" v-bind:key="player[0]">
+                    {{ player[0] }}: {{ skillData[player[1]] }} <button v-on:click="removePlayer(player[0])">Delete</button>
+                </div> <br />
+                Name: <input type="text" v-model="playerName" /> <br />
+                Skill tasted on default meal: <skill-selector v-on:skill-update="tastedSkillUpdate($event)"></skill-selector> <br />
+                <button v-on:click="addPlayer()">Add</button>
+            </div>
+        `
+    });
+
     Vue.component('pizza-generator', {
         props: ['offset', 'pizzaMode'],
         data: function() {
@@ -1458,6 +1525,11 @@
                 'minSausages': 2,
                 'maxSausages': 4,
                 'sausageExtended': false,
+
+                'selectedVeggieSausageTypes': [... allVeggies],
+                'minVeggieSausages': 0,
+                'maxVeggieSausages': 0,
+                'veggieSausageExtended': false,
 
                 'selectedRawMeatTypes': ['1', '2', '3', '4', '7', '8', '10', '11', '12', '13', '14', '15'],
                 'meatModifierTypes': meatModifierTypes,
@@ -1554,6 +1626,10 @@
                 if (newVal > this.maxMeat) {
                     this.maxMeat = newVal;
                 }
+            }, minVeggieSausages: function(newVal, oldVal) {
+                if (newVal > this.maxVeggieSausages) {
+                    this.maxVeggieSausages = newVal;
+                }
             }, minCheese: function(newVal, oldVal) {
                 if (newVal > this.maxCheese) {
                     this.maxCheese = newVal;
@@ -1606,6 +1682,13 @@
                         'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedMeatTypes), [13]),
                         min: this.minSausages,
                         max: this.maxSausages
+                    });
+                }
+                if (this.maxVeggieSausages >= this.minVeggieSausages && this.maxVeggieSausages > 0) {
+                    ingrs.push({
+                        'generator': new GenericIngredientModifierGenerator(Array.from(this.selectedVeggieSausageTypes), [14]),
+                        min: this.minVeggieSausages,
+                        max: this.maxVeggieSausages
                     });
                 }
                 if (this.maxCheese >= this.minCheese && this.maxCheese > 0) {
@@ -1687,15 +1770,7 @@
                         this.resultError = "No saved default meal";
                         return;
                     }
-                    let mealIngredients = JSON.parse(localStorage.meal_ingredients);
-                    let mealCooker = JSON.parse(localStorage.meal_cooker);
-                    let mealCookerRarity = JSON.parse(localStorage.meal_cookerRarity);
-                    let mealCookerContainer = JSON.parse(localStorage.meal_cookerContainer);
-                    let mealValue = cookerData[mealCooker] + rarityData[mealCookerRarity] + containerData[mealCookerContainer];
-                    for (let ingredient of mealIngredients) {
-                        mealValue += ingredientValue(ingredient);
-                    }
-                    mealValue %= modulus;
+                    let mealValue = calculateDefaultMealValue();
                     startValue = this.tastedSkill - mealValue + setupAdds;
                     cookStartValue = this.cookTastedSkill - mealValue + setupAdds;
                     while (startValue < 0) {
@@ -1751,12 +1826,17 @@
                     
                     let cookAdded = false;
                     let cookInfo = '';
+                    let pizzaValueCalced = false;
+                    let pizzaValue = setupAdds;
                     for (let res of result) {
                         let value = startValue;
                         let cookValue = (cookStartValue != null) ? cookStartValue : 0;
                         for (let ingr of res) {
                             value += ingredientValue(ingr);
                             cookValue += ingredientValue(ingr);
+                            if (!pizzaValueCalced) {
+                                pizzaValue += ingredientValue(ingr);
+                            }
                         }
                         value %= modulus;
                         if (value != this.targetSkill) {
@@ -1770,13 +1850,18 @@
                             cookInfo = " (Cook: " + skillData[cookValue % modulus]+")";
                             cookAdded = true;
                         }
+                        pizzaValueCalced = true;
                     }
+                    pizzaValue %= modulus;
                     result[best].sort(pizzaSort);
                     this.results.unshift({
                         'ingredients': result[best],
                         'label': label,
                         'affinities': affinities,
                         'cookInfo': cookInfo,
+                        'pizzaValue': pizzaValue,
+                        'playerNames': [],
+                        'playerValues': [], 
                         'key': uuidv4()
                     });
                     this.resultError = "";
@@ -1874,6 +1959,32 @@
                 return btoa(encodeURIComponent(str));
             }, decodeProfileName(str) {
                 return decodeURIComponent(atob(str));
+            }, showPizzaPlayers(key) {
+                for (let i = 0; i < this.results.length; i++) {
+                    let pizza = this.results[i];
+                    if (pizza.key == key) {
+                        let mealValue = calculateDefaultMealValue();
+
+                        let playerData = JSON.parse(localStorage.playerList);
+                        playerData.sort((t1, t2) => {
+                            return t1[0].localeCompare(t2[0]);
+                        })
+                        let playerNames = [];
+                        let playerValues = [];
+                        for (let tuple of playerData) {
+                            playerNames.push(tuple[0]);
+                            let skill = tuple[1];
+                            let finalSkill = skill - mealValue + pizza.pizzaValue;
+                            while (finalSkill < 0) {
+                                finalSkill += modulus;
+                            }
+                            finalSkill %= modulus;
+                            playerValues.push(skillData[finalSkill]);
+                        }
+                        pizza.playerNames = playerNames;
+                        pizza.playerValues = playerValues;
+                    }
+                }
             }
         },
         mounted: function() {
@@ -1919,7 +2030,7 @@
                 
                 <div class="slider">
                     <div>Minimum number of ingredients (will not always work!): {{ minIngredients }}</div>
-                    <div class="slider-range"><input type="range" v-model.number="minIngredients" step="1" min="1" max="30" /></div>
+                    <div class="slider-range"><input type="range" v-model.number="minIngredients" step="1" min="1" max="35" /></div>
                     <div><input type="checkbox" v-model="moreDiverse" id="pizza_md" /><label for="pizza_md">Try to make a more diverse pizza. This uses randomness, so click 'Make a pizza' again until you are satisfied (and try changing the minimum/maximum settings of ingredients).</label></div>
                     <div><input type="checkbox" v-model="evenMoreDiverse" id="pizza_emd" /><label for="pizza_emd">Randomize pizza even more (shuffles the ingredient categories).</label></div>
                     <div><input type="checkbox" v-model="uniqueIngredients" id="pizza_ui" /><label for="pizza_ui">Use each unique ingredient only once (<b>Warning:</b> Can lead to pizzas not being generated)</label></div>
@@ -1944,6 +2055,18 @@
                         Select desired meat types for sausages: <br />
                         <div v-for="(value, name) in meatTypes" class="meat-select">
                             <input type="checkbox" v-model="selectedMeatTypes" :value="name" :id="'pizzaMeat_'+name" /><label :for="'pizzaMeat_'+name">{{ value }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="ingredient-category">
+                    <div class="ingcat-header">
+                        <h3 v-on:click="toggle('veggieSausageExtended')">Vegetable Sausages</h3>
+                        Minimum: <input type="number" min="0" v-model.number="minVeggieSausages"/> | Maximum: <input type="number" min="0" v-model.number="maxVeggieSausages"/>
+                    </div>
+                    <div class="ingcat-body" v-show="veggieSausageExtended">
+                        Select desired vegetable types for sausages: <br />
+                        <div v-for="(value, name) in vegetableTypes" class="meat-select">
+                            <input type="checkbox" v-model="selectedVeggieSausageTypes" :value="name" :id="'pizzaVeggieMeat_'+name" /><label :for="'pizzaVeggieMeat_'+name">{{ value }}</label>
                         </div>
                     </div>
                 </div>
@@ -2083,8 +2206,20 @@
                 </div>
                 <div>
                     <div v-for="result in results" v-bind:key="result.key" class="pizza-result">
-                        <div class="pizza-label">{{ result.label }} <br /> <button v-on:click="removePizza(result.key)">Remove</button> <br /> {{ result.affinities }} <br /> {{ result.cookInfo}}</div>
+                        <div class="pizza-label">{{ result.label }} <br /> #Ingredients: {{ result.ingredients.length }} <br /> <button v-on:click="removePizza(result.key)">Remove</button> <br /> {{ result.affinities }} <br /> {{ result.cookInfo}}</div>
                         <ingredient-display v-bind:ingredients="result.ingredients"></ingredient-display>
+                        <br />
+                        <button v-on:click="showPizzaPlayers(result.key)">Show affinities for saved players</button> <br />
+                        <div v-if="result.playerNames.length > 0 && result.playerValues.length > 0" class="pizza-player-table-container">
+                            <table class="pizza-player-table">
+                                <tr>
+                                    <th v-for="name in result.playerNames">{{ name }}</th>
+                                </tr>
+                                <tr>
+                                    <td v-for="value in result.playerValues">{{ value }}</td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -2117,7 +2252,8 @@
             mealMaker: false,
             pizzaGenerator: false,
             pizzaMode: true,
-            importExport: false
+            importExport: false,
+            playerList: false
         },
         methods: {
             setOffset(offset) {

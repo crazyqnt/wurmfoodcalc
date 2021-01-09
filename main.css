@@ -140,3 +140,22 @@ section {
 .slider-range > input {
     min-width: 300px;
 }
+
+.pizza-player-table-container {
+    display: block;
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.pizza-player-table {
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.pizza-player-table td, .pizza-player-table th {
+    border: 1px solid black;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 7px;
+    padding-right: 7px;
+}
